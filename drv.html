@@ -1,0 +1,3068 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" href="style.css">
+
+<title>Volatility Digit Viewer - Estrategia V3 con Filtro de Patrón Alternado</title>
+
+<style>
+/* ESTILOS ADICIONALES PARA LA VERSIÓN MODIFICADA */
+.phase-digit-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 0 2px;
+}
+
+.phase-digit-header {
+    font-size: 0.6rem;
+    margin-top: 2px;
+    padding: 1px 4px;
+    border-radius: 2px;
+    font-weight: bold;
+}
+
+.header-extreme {
+    background: rgba(243, 156, 18, 0.2);
+    color: #f39c12;
+}
+
+.header-normal {
+    background: rgba(46, 204, 113, 0.2);
+    color: #2ecc71;
+}
+
+.digit-badge {
+    position: relative;
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 4px;
+    margin: 2px;
+    font-weight: bold;
+    font-size: 0.9rem;
+}
+
+.digit-value {
+    font-size: 1rem;
+}
+
+.digit-header {
+    font-size: 0.6rem;
+    position: absolute;
+    top: -6px;
+    right: -4px;
+    background: rgba(0,0,0,0.7);
+    color: white;
+    padding: 1px 3px;
+    border-radius: 2px;
+}
+
+.digit-zero {
+    box-shadow: 0 0 0 2px #f39c12;
+    animation: pulseZero 1s infinite;
+}
+
+@keyframes pulseZero {
+    0% { box-shadow: 0 0 0 2px rgba(243, 156, 18, 0.7); }
+    50% { box-shadow: 0 0 0 3px rgba(243, 156, 18, 1); }
+    100% { box-shadow: 0 0 0 2px rgba(243, 156, 18, 0.7); }
+}
+
+.operation-card {
+    background: rgba(30, 30, 46, 0.8);
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 10px;
+    border-left: 4px solid;
+}
+
+.operation-card.win {
+    border-left-color: #27ae60;
+    background: rgba(39, 174, 96, 0.1);
+}
+
+.operation-card.loss {
+    border-left-color: #e74c3c;
+    background: rgba(231, 76, 60, 0.1);
+}
+
+.operation-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.operation-number {
+    font-weight: bold;
+    color: #3498db;
+}
+
+.operation-status {
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    font-weight: bold;
+}
+
+.status-win {
+    background: rgba(39, 174, 96, 0.2);
+    color: #27ae60;
+}
+
+.status-loss {
+    background: rgba(231, 76, 60, 0.2);
+    color: #e74c3c;
+}
+
+.operation-details {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.detail-group {
+    margin-bottom: 8px;
+}
+
+.detail-label {
+    font-size: 0.8rem;
+    color: #95a5a6;
+    margin-bottom: 3px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.detail-value {
+    font-size: 0.9rem;
+    color: white;
+    font-weight: 500;
+}
+
+.digits-container {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-top: 5px;
+}
+
+.digit-blue {
+    background: rgba(52, 152, 219, 0.2);
+    color: #3498db;
+    border: 1px solid rgba(52, 152, 219, 0.4);
+}
+
+.digit-red {
+    background: rgba(231, 76, 60, 0.2);
+    color: #e74c3c;
+    border: 1px solid rgba(231, 76, 60, 0.4);
+}
+
+.operation-result {
+    padding: 8px;
+    border-radius: 4px;
+    margin-top: 10px;
+    text-align: center;
+    font-weight: bold;
+    display: flex;
+    justify-content: space-around;
+}
+
+.result-win {
+    background: rgba(39, 174, 96, 0.15);
+    color: #27ae60;
+    border: 1px solid rgba(39, 174, 96, 0.3);
+}
+
+.result-loss {
+    background: rgba(231, 76, 60, 0.15);
+    color: #e74c3c;
+    border: 1px solid rgba(231, 76, 60, 0.3);
+}
+
+.operations-list {
+    max-height: 500px;
+    overflow-y: auto;
+    padding-right: 5px;
+}
+
+.operations-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.operations-list::-webkit-scrollbar-track {
+    background: rgba(255,255,255,0.05);
+    border-radius: 3px;
+}
+
+.operations-list::-webkit-scrollbar-thumb {
+    background: rgba(52, 152, 219, 0.5);
+    border-radius: 3px;
+}
+
+.empty-history {
+    text-align: center;
+    padding: 40px 20px;
+    color: #7f8c8d;
+}
+
+.empty-history i {
+    font-size: 3rem;
+    margin-bottom: 15px;
+    opacity: 0.5;
+}
+
+.empty-history h3 {
+    margin-bottom: 10px;
+    color: #95a5a6;
+}
+
+/* Estilos para el análisis en tiempo real */
+.analysis-phase {
+    margin-bottom: 12px;
+    padding: 8px;
+    background: rgba(255,255,255,0.03);
+    border-radius: 6px;
+}
+
+.phase-title {
+    font-size: 0.85rem;
+    color: #95a5a6;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.phase-content {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.phase-digit {
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    font-weight: bold;
+    font-size: 1rem;
+}
+
+.analysis-blue {
+    background: rgba(52, 152, 219, 0.2);
+    color: #3498db;
+    border: 1px solid rgba(52, 152, 219, 0.4);
+}
+
+.analysis-red {
+    background: rgba(231, 76, 60, 0.2);
+    color: #e74c3c;
+    border: 1px solid rgba(231, 76, 60, 0.4);
+}
+
+/* Nuevos estilos para V3 */
+.pattern-info {
+    background: rgba(155, 89, 182, 0.1);
+    border: 1px solid rgba(155, 89, 182, 0.3);
+    border-radius: 6px;
+    padding: 10px;
+    margin: 8px 0;
+    font-size: 0.85rem;
+}
+
+.pattern-valid {
+    background: rgba(46, 204, 113, 0.1);
+    border: 1px solid rgba(46, 204, 113, 0.3);
+}
+
+.pattern-invalid {
+    background: rgba(231, 76, 60, 0.1);
+    border: 1px solid rgba(231, 76, 60, 0.3);
+}
+
+.scanning-animation {
+    display: inline-block;
+    animation: scanning 2s infinite;
+    color: #3498db;
+}
+
+@keyframes scanning {
+    0% { opacity: 0.3; }
+    50% { opacity: 1; }
+    100% { opacity: 0.3; }
+}
+
+/* Estilos para el nuevo filtro de patrón */
+.pattern-filter {
+    background: rgba(52, 152, 219, 0.1);
+    border: 1px solid rgba(52, 152, 219, 0.3);
+    border-radius: 6px;
+    padding: 10px;
+    margin: 8px 0;
+    font-size: 0.85rem;
+}
+
+.pattern-alternating {
+    background: rgba(46, 204, 113, 0.15);
+    border: 1px solid rgba(46, 204, 113, 0.4);
+}
+
+.pattern-non-alternating {
+    background: rgba(231, 76, 60, 0.15);
+    border: 1px solid rgba(231, 76, 60, 0.4);
+}
+
+.pattern-sequence {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin: 10px 0;
+}
+
+.pattern-char {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 1rem;
+}
+
+.pattern-char-a {
+    background: rgba(52, 152, 219, 0.3);
+    color: #3498db;
+    border: 2px solid #3498db;
+}
+
+.pattern-char-r {
+    background: rgba(231, 76, 60, 0.3);
+    color: #e74c3c;
+    border: 2px solid #e74c3c;
+}
+</style>
+
+</head>
+<body>
+
+<!-- OVERLAY PARA PANELES MODALES -->
+<div class="overlay" id="overlay" onclick="closeAllModals()"></div>
+
+<!-- PANEL DE RESULTADOS MODAL -->
+<div class="modal result-panel" id="result-panel">
+    <div class="modal-header">
+        <div class="modal-title">
+            <i class="fas fa-chart-line"></i>
+            <span>RESULTADOS DE OPERACIONES</span>
+        </div>
+        <div class="close-modal" onclick="closeResultPanel()">
+            <i class="fas fa-times"></i>
+        </div>
+    </div>
+    <div class="modal-content" id="result-content">
+        <!-- Contenido generado dinámicamente -->
+    </div>
+</div>
+
+<!-- PANEL DE HISTORIAL DE OPERACIONES -->
+<div class="modal operations-history-panel" id="operations-history-panel">
+    <div class="modal-header">
+        <div class="modal-title">
+            <i class="fas fa-history"></i>
+            <span>HISTORIAL DE OPERACIONES</span>
+        </div>
+        <div class="close-modal" onclick="closeOperationsHistory()">
+            <i class="fas fa-times"></i>
+        </div>
+    </div>
+    <div class="modal-content" id="operations-history-content">
+        <!-- Contenido generado dinámicamente -->
+        <div class="empty-history">
+            <i class="fas fa-clipboard-list"></i>
+            <h3>No hay operaciones registradas</h3>
+            <p>Las operaciones realizadas aparecerán aquí</p>
+        </div>
+    </div>
+</div>
+
+<!-- HEADER PRINCIPAL -->
+<header class="main-header">
+    <button class="mobile-menu-toggle" onclick="toggleMobileMenu()">
+        <i class="fas fa-bars"></i>
+    </button>
+    
+    <div class="price-display">
+        <div class="current-price" id="price">0000.000</div>
+        <div class="price-indicator indicator-mid" id="price-indicator">MEDIO</div>
+    </div>
+    
+    <div class="header-controls" id="header-controls">
+        <button onclick="showOperationsHistory()" class="btn-info">
+            <i class="fas fa-history"></i> Historial
+        </button>
+        
+        <select id="asset-selector" class="asset-selector">
+            <option value="R_10">Volatility 10 Index</option>
+            <option value="R_25">Volatility 25 Index</option>
+            <option value="R_50">Volatility 50 Index</option>
+            <option value="R_75">Volatility 75 Index</option>
+            <option value="R_100">Volatility 100 Index</option>
+        </select>
+        
+        <button onclick="startFeed()" class="btn-success">
+            <i class="fas fa-play"></i> Start
+        </button>
+        <button onclick="stopFeed()" class="btn-danger">
+            <i class="fas fa-stop"></i> Stop
+        </button>
+    </div>
+</header>
+
+<!-- CONTENEDOR PRINCIPAL -->
+<div class="main-container">
+    
+    <!-- PANEL IZQUIERDO: LDP Y ANÁLISIS -->
+    <div class="panel ldp-section">
+        <div class="ldp-header">
+            <div class="strategy-title">
+                <i class="fas fa-bolt"></i>
+                <span>CUADRÍCULA LDP - Estrategia V3 con FILTRO DE PATRÓN ALTERNADO</span>
+            </div>
+            
+            <div class="ldp-controls">
+                <button onclick="clearGrid()" title="Limpiar toda la cuadrícula">
+                    <i class="fas fa-eraser"></i> Limpiar
+                </button>
+                <button onclick="toggleHistory()" title="Mostrar/ocultar historial">
+                    <i class="fas fa-history"></i> Historial
+                </button>
+                <button onclick="toggleArrows()" title="Mostrar/ocultar flechas">
+                    <i class="fas fa-route"></i> Flechas
+                </button>
+                <button onclick="toggleHeaders()" title="Mostrar/ocultar cabeceras">
+                    <i class="fas fa-tag"></i> Cabeceras
+                </button>
+            </div>
+        </div>
+        
+        <div class="ldp-container">
+            <div class="section-labels">
+                <div class="section-label blue-label">
+                    <i class="fas fa-arrow-up"></i> CALL/UP
+                </div>
+                <div class="section-label red-label">
+                    <i class="fas fa-arrow-down"></i> PUT/DOWN
+                </div>
+            </div>
+            
+            <div class="center-divider"></div>
+            
+            <!-- SVG PARA FLECHAS -->
+            <svg class="connection-arrow" id="arrow-svg" width="100%" height="100%" style="position: absolute; top: 35px; left: 0; right: 0; bottom: 0; pointer-events: none;">
+                <!-- Flechas generadas dinámicamente -->
+            </svg>
+            
+            <!-- CUADRÍCULA OPTIMIZADA -->
+            <div class="grid-container" id="ldp-grid">
+                <!-- Grid generado por JavaScript -->
+            </div>
+            
+            <div class="status-indicator">
+                <div class="status-dot"></div>
+                <span id="grid-status">Listo</span>
+            </div>
+        </div>
+        
+        <!-- ANÁLISIS CABECERA VERDE V3 CON FILTRO ALTERNADO -->
+        <div class="green-analysis-panel">
+            <div class="green-analysis-header">
+                <i class="fas fa-chart-line"></i>
+                <span>ANÁLISIS V3 - FILTRO: R-A-R-A o A-R-A-R SOLAMENTE</span>
+            </div>
+            <div id="green-analysis-content">
+                <div style="text-align: center; color: #7f8c8d; padding: 15px;">
+                    <i class="fas fa-filter fa-2x" style="margin-bottom: 8px;"></i>
+                    <div>Escaneando con FILTRO DE PATRÓN ALTERNADO</div>
+                    <div style="font-size: 0.75rem; margin-top: 4px;">
+                        <span class="scanning-animation">●</span> Solo patrones: R-A-R-A o A-R-A-R
+                    </div>
+                    <div style="font-size: 0.75rem; margin-top: 2px; color: #3498db;">
+                        <i class="fas fa-info-circle"></i> Rechaza: A-A-R-R, R-R-A-A, A-R-R-A, R-A-A-R
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- PANEL DERECHO: TRADING Y SEÑALES -->
+    <div class="panel">
+        <!-- TRADING PANEL -->
+        <div class="trading-panel">
+            <div class="trading-header">
+                <i class="fas fa-coins"></i>
+                <span>GESTIÓN DE TRADING</span>
+            </div>
+            
+            <div class="trading-controls-grid">
+                <div class="control-group">
+                    <label class="control-label">
+                        <i class="fas fa-dollar-sign"></i> Monto a Operar ($)
+                    </label>
+                    <input type="number" id="trading-stake" class="trading-input" value="1" min="0.1" step="0.1">
+                </div>
+                
+                <div class="control-group">
+                    <label class="control-label">
+                        <i class="fas fa-trophy"></i> Stop Win ($)
+                    </label>
+                    <input type="number" id="trading-stop-win" class="trading-input" value="10" min="1" step="1">
+                </div>
+                
+                <div class="control-group">
+                    <label class="control-label">
+                        <i class="fas fa-shield-alt"></i> Stop Loss ($)
+                    </label>
+                    <input type="number" id="trading-stop-loss" class="trading-input" value="10" min="1" step="1">
+                </div>
+                
+                <div class="control-group">
+                    <label>&nbsp;</label>
+                    <button onclick="iniciarTrading()" class="btn-success">
+                        <i class="fas fa-play-circle"></i> Iniciar Trading
+                    </button>
+                </div>
+                
+                <div class="control-group">
+                    <label>&nbsp;</label>
+                    <button onclick="resetTrading()" class="btn-danger">
+                        <i class="fas fa-redo"></i> Reset Trading
+                    </button>
+                </div>
+                
+                <!-- BOTONES DE CONTROL DE PAUSA -->
+                <div class="control-group">
+                    <label>&nbsp;</label>
+                    <button onclick="toggleTradingPause()" class="btn-warning">
+                        <i class="fas fa-pause"></i> Pausar/Reanudar
+                    </button>
+                </div>
+                
+                <div class="control-group">
+                    <label>&nbsp;</label>
+                    <button onclick="forceResumeTrading()" class="btn-danger">
+                        <i class="fas fa-play"></i> Forzar Reanudar
+                    </button>
+                </div>
+            </div>
+            
+            <div class="trading-stats-grid">
+                <div class="stat-card">
+                    <div class="stat-label">Ganancia/Pérdida</div>
+                    <div class="stat-value positive" id="trading-profit">$0.00</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-label">Operaciones Ganadas</div>
+                    <div class="stat-value positive" id="trading-wins">0</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-label">Operaciones Perdidas</div>
+                    <div class="stat-value" id="trading-losses">0</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-label">Estado</div>
+                    <div class="stat-value" id="trading-estado" style="color: #f39c12;">INACTIVO</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-label">Estado Señales</div>
+                    <div class="stat-value" id="trading-signal-status" style="color: #3498db;">ACTIVO</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- SEÑALES PANEL -->
+        <div class="signals-panel">
+            <div class="section-title">
+                <i class="fas fa-bell"></i>
+                <span>SEÑALES EN TIEMPO REAL</span>
+            </div>
+            
+            <div class="signals-grid">
+                <div class="signal-card signal-down" id="signal-down-box">
+                    <div class="signal-title">
+                        <i class="fas fa-arrow-down"></i>
+                        <span>PUT (DOWN)</span>
+                    </div>
+                    <div class="signal-text" id="signal-down-text">ESPERANDO</div>
+                    <div class="signal-status" style="font-size: 0.85rem; color: #95a5a6;">
+                        <i class="fas fa-pause-circle"></i> Inactivo
+                    </div>
+                </div>
+                
+                <div class="signal-card signal-up" id="signal-up-box">
+                    <div class="signal-title">
+                        <i class="fas fa-arrow-up"></i>
+                        <span>CALL (UP)</span>
+                    </div>
+                    <div class="signal-text" id="signal-up-text">ESPERANDO</div>
+                    <div class="signal-status" style="font-size: 0.85rem; color: #95a5a6;">
+                        <i class="fas fa-pause-circle"></i> Inactivo
+                    </div>
+                </div>
+                
+                <div class="signal-card countdown-box">
+                    <div class="signal-title">
+                        <i class="fas fa-filter"></i>
+                        <span>FILTRO ACTIVO</span>
+                    </div>
+                    <div class="signal-text" id="countdown-text">
+                        R/A/R/A
+                    </div>
+                    <div class="signal-status" style="font-size: 0.85rem; color: #95a5a6;">
+                        Solo patrones alternados
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- PANEL DE INFORMACIÓN -->
+        <div class="info-panel">
+            <div class="info-card">
+                <div class="info-label">
+                    <i class="fas fa-plug"></i> Estado Conexión
+                </div>
+                <div class="info-value" id="status">Desconectado</div>
+            </div>
+            
+            <div class="info-card">
+                <div class="info-label">
+                    <i class="fas fa-tachometer-alt"></i> Ticks Recibidos
+                </div>
+                <div class="info-value" id="tick-count">0</div>
+            </div>
+            
+            <div class="info-card">
+                <div class="info-label">
+                    <i class="fas fa-digital-tachograph"></i> Dígito Anterior
+                </div>
+                <div class="info-value" id="prev-digit">-</div>
+            </div>
+            
+            <div class="info-card">
+                <div class="info-label">
+                    <i class="fas fa-layer-group"></i> Nivel Precio
+                </div>
+                <div class="info-value" id="price-level">-</div>
+            </div>
+        </div>
+        
+        <!-- HISTORIAL DE DÍGITOS -->
+        <div class="history-panel">
+            <div class="section-title">
+                <i class="fas fa-history"></i>
+                <span>Historial de Dígitos (Últimos 50)</span>
+            </div>
+            <div class="history-digits" id="history-digits">
+                <!-- Historial generado dinámicamente -->
+            </div>
+        </div>
+    </div>
+    
+    <!-- PANEL INFERIOR: ANÁLISIS DETALLADO -->
+    <div class="panel full-width">
+        <div class="section-title">
+            <i class="fas fa-chart-bar"></i>
+            <span>ANÁLISIS DETALLADO - V3 CON FILTRO DE PATRÓN ALTERNADO</span>
+        </div>
+        
+        <div class="analysis-details">
+            <div class="details-grid">
+                <div class="detail-card">
+                    <div class="info-label">Modo Análisis</div>
+                    <div class="info-value" id="analysis-mode" style="color: #9b59b6;">
+                        <i class="fas fa-filter"></i> FILTRO ALTERNADO
+                    </div>
+                </div>
+                
+                <div class="detail-card">
+                    <div class="info-label">Patrones Permitidos</div>
+                    <div class="info-value" id="allowed-patterns">
+                        <span style="color:#3498db">R-A-R-A</span> / <span style="color:#e74c3c">A-R-A-R</span>
+                    </div>
+                </div>
+                
+                <div class="detail-card">
+                    <div class="info-label">Último Patrón</div>
+                    <div class="info-value" id="last-pattern">-</div>
+                </div>
+                
+                <div class="detail-card">
+                    <div class="info-label">Estado Filtro</div>
+                    <div class="info-value" id="filter-status">
+                        <span style="color:#2ecc71">ACTIVO</span>
+                    </div>
+                </div>
+                
+                <div class="detail-card">
+                    <div class="info-label">Composición</div>
+                    <div class="info-value" id="composition-display">
+                        <span style="color:#3498db">2 azules</span> + <span style="color:#e74c3c">2 rojos</span>
+                    </div>
+                </div>
+                
+                <div class="detail-card">
+                    <div class="info-label">Consecutividad</div>
+                    <div class="info-value" id="consecutive-status">
+                        <span style="color:#7f8c8d">Esperando 4 ticks...</span>
+                    </div>
+                </div>
+                
+                <div class="detail-card">
+                    <div class="info-label">Restricción Dígito 0</div>
+                    <div class="info-value" id="zero-restriction-display">
+                        <span style="color: var(--success-color);">✓ ACTIVA</span>
+                    </div>
+                </div>
+                
+                <div class="detail-card">
+                    <div class="info-label">Patrón Alternado</div>
+                    <div class="info-value" id="alternating-status">
+                        <span style="color:#f39c12">VERIFICANDO...</span>
+                    </div>
+                </div>
+                
+                <div class="detail-card">
+                    <div class="info-label">Validación Precio</div>
+                    <div class="info-value" id="price-validation-display">
+                        <span style="color: #7f8c8d;">Esperando patrón...</span>
+                    </div>
+                </div>
+                
+                <div class="detail-card">
+                    <div class="info-label">Señal Final</div>
+                    <div class="info-value" id="final-signal-display">-</div>
+                </div>
+                
+                <div class="detail-card">
+                    <div class="info-label">Patrones Rechazados</div>
+                    <div class="info-value" id="rejected-patterns">0</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- SCRIPT JAVASCRIPT COMPLETO CON FILTRO DE PATRÓN ALTERNADO -->
+<script>
+// ====================== FUNCIONES DE RESPONSIVE ======================
+function toggleMobileMenu() {
+    const controls = document.getElementById('header-controls');
+    controls.classList.toggle('mobile-visible');
+    
+    const toggleBtn = document.querySelector('.mobile-menu-toggle');
+    if (controls.classList.contains('mobile-visible')) {
+        toggleBtn.innerHTML = '<i class="fas fa-times"></i>';
+        toggleBtn.style.background = '#e74c3c';
+    } else {
+        toggleBtn.innerHTML = '<i class="fas fa-bars"></i>';
+        toggleBtn.style.background = '';
+    }
+}
+
+function closeAllModals() {
+    document.getElementById('overlay').style.display = 'none';
+    document.getElementById('result-panel').style.display = 'none';
+    document.getElementById('operations-history-panel').style.display = 'none';
+}
+
+// ====================== AJUSTES RESPONSIVE PARA LA CUADRÍCULA ======================
+function updateGridForScreenSize() {
+    const grid = document.getElementById('ldp-grid');
+    const svg = document.getElementById('arrow-svg');
+    
+    if (!grid || !svg) return;
+    
+    const screenWidth = window.innerWidth;
+    
+    if (screenWidth < 480) {
+        // Móviles pequeños
+        grid.style.maxWidth = '300px';
+        grid.style.gap = '1px';
+        svg.setAttribute('width', '300px');
+        svg.setAttribute('height', '300px');
+    } else if (screenWidth < 768) {
+        // Tablets y móviles grandes
+        grid.style.maxWidth = '350px';
+        svg.setAttribute('width', '350px');
+        svg.setAttribute('height', '350px');
+    } else if (screenWidth < 1024) {
+        // Tablets horizontales
+        grid.style.maxWidth = '380px';
+        svg.setAttribute('width', '380px');
+        svg.setAttribute('height', '380px');
+    } else {
+        // Escritorio
+        grid.style.maxWidth = '420px';
+        svg.setAttribute('width', '420px');
+        svg.setAttribute('height', '420px');
+    }
+}
+
+// ====================== AJUSTAR TAMAÑO DE FUENTES PARA DISPOSITIVOS PEQUEÑOS ======================
+function adjustFontSizes() {
+    const screenWidth = window.innerWidth;
+    const html = document.documentElement;
+    
+    if (screenWidth < 480) {
+        html.style.fontSize = '14px';
+    } else if (screenWidth < 768) {
+        html.style.fontSize = '15px';
+    } else {
+        html.style.fontSize = '16px';
+    }
+}
+
+// ====================== LISTENER PARA CAMBIOS DE TAMAÑO ======================
+window.addEventListener('resize', function() {
+    updateGridForScreenSize();
+    adjustFontSizes();
+    updateSVGSize();
+});
+
+function updateSVGSize() {
+    const svg = document.getElementById('arrow-svg');
+    const grid = document.getElementById('ldp-grid');
+    
+    if (svg && grid) {
+        const gridRect = grid.getBoundingClientRect();
+        svg.setAttribute('width', gridRect.width);
+        svg.setAttribute('height', gridRect.height);
+    }
+}
+
+// ====================== INICIALIZACIÓN RESPONSIVE ======================
+window.onload = function() {
+    initLDPGrid();
+    autoStartTrading();
+    loadOperationsHistory();
+    updateGridForScreenSize();
+    adjustFontSizes();
+    
+    console.log("🌟 Sistema V3 con FILTRO DE PATRÓN ALTERNADO cargado");
+    console.log("🎯 Nuevo filtro: Solo patrones R-A-R-A o A-R-A-R");
+    console.log("❌ Rechaza: A-A-R-R, R-R-A-A, A-R-R-A, R-A-A-R");
+    console.log("📊 Validación: Dirección + Precio + Niveles + Patrón Alternado");
+    
+    setTimeout(conectarDerivAPI, 3000);
+};
+
+// ====================== MODIFICACIONES EN LAS FUNCIONES EXISTENTES PARA RESPONSIVE ======================
+
+// En la función createArrow, ajustar para usar porcentajes en lugar de píxeles fijos
+function createArrow(fromPos, toPos, isUp) {
+    const svg = document.getElementById('arrow-svg');
+    if (!svg || arrowCounter > 15) {
+        if (svg && svg.children.length > 15) {
+            svg.removeChild(svg.firstChild);
+        }
+    }
+    
+    const gridRect = document.getElementById('ldp-grid').getBoundingClientRect();
+    const svgRect = svg.getBoundingClientRect();
+    
+    // Convertir posiciones relativas a porcentajes para SVG responsive
+    const x1 = ((fromPos.x / gridRect.width) * 100) + '%';
+    const y1 = ((fromPos.y / gridRect.height) * 100) + '%';
+    const x2 = ((toPos.x / gridRect.width) * 100) + '%';
+    const y2 = ((toPos.y / gridRect.height) * 100) + '%';
+    
+    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    line.setAttribute('x1', x1);
+    line.setAttribute('y1', y1);
+    line.setAttribute('x2', x2);
+    line.setAttribute('y2', y2);
+    line.setAttribute('class', `arrow-line arrow-${isUp ? 'up' : 'down'}`);
+    line.setAttribute('id', `arrow-${arrowCounter++}`);
+    
+    svg.appendChild(line);
+}
+
+// En la función getCellCenter, hacerla relativa al tamaño de la cuadrícula
+function getCellCenter(x, y) {
+    const grid = document.getElementById('ldp-grid');
+    const gridRect = grid.getBoundingClientRect();
+    const cellSize = gridRect.width / 11;
+    const gridOffset = gridRect.height * 0.1; // 10% del alto
+    
+    const centerX = x * cellSize + cellSize/2;
+    const centerY = gridOffset + (10 - y) * cellSize + cellSize/2;
+    
+    return { x: centerX, y: centerY };
+}
+
+// ====================== FUNCIÓN PARA CERRAR TODOS LOS MODALES AL TOCAR EL OVERLAY ======================
+document.getElementById('overlay').addEventListener('click', closeAllModals);
+
+// ====================== AJUSTE PARA TECLADO VIRTUAL EN MÓVILES ======================
+window.addEventListener('orientationchange', function() {
+    setTimeout(function() {
+        // Forzar redibujado en cambio de orientación
+        updateGridForScreenSize();
+        adjustFontSizes();
+    }, 300);
+});
+
+// ====================== OPTIMIZACIÓN PARA DISPOSITIVOS TÁCTILES ======================
+document.addEventListener('touchstart', function() {}, {passive: true});
+
+// ====================== VARIABLES GLOBALES CON SISTEMA DE PAUSA ======================
+let ws, priceEl = document.getElementById("price"),
+    lastDigitEl = document.getElementById("last-digit"),
+    chart = document.getElementById("chart"),
+    ctx = chart ? chart.getContext("2d") : null,
+    digits = [],
+    running = false,
+    lastPrice = null,
+    tickCount = 0,
+    currentAsset = "R_10",
+    prevDigit = null,
+    prevTrend = null,
+    digitHistory = [],
+    digitCounters = Array(11).fill().map(() => Array(11).fill(0)),
+    showHistory = true;
+
+let showArrows = true;
+let signalActiveDown = false;
+let signalActiveUp = false;
+
+// ====================== SISTEMA DE HISTORIAL DE OPERACIONES ======================
+let operationsHistory = [];
+
+// ====================== SISTEMA DE PAUSA AUTOMÁTICA ======================
+let tradingPaused = false;
+let pauseUntil = null;
+let currentOperation = null;
+let pauseTimeout = null;
+
+// ====================== SISTEMA DE ANÁLISIS CONTINUO V3 CON FILTRO DE PATRÓN ALTERNADO ======================
+
+class GreenHeaderStrategyV3Alternating {
+  constructor() {
+    this.reset();
+    this.MIN_TICKS_BETWEEN_SIGNALS = 2;
+    this.WINDOW_SIZE = 15;
+    this.patternsDetected = 0;
+    this.patternsRejected = 0;
+    this.lastPatternScan = null;
+    // PATRONES PERMITIDOS: Solo R-A-R-A o A-R-A-R
+    this.ALLOWED_PATTERNS = ['RARA', 'ARAR'];
+    this.REJECTED_PATTERNS = ['AARR', 'RRAA', 'ARRA', 'RAAR'];
+  }
+  
+  reset() {
+    this.digitWindow = [];
+    this.globalTickIndex = 0;
+    this.lastSignalTickIndex = -10;
+    this.analysisActive = true;
+    this.patternsDetected = 0;
+    this.patternsRejected = 0;
+    this.lastValidSequence = null;
+    this.lastPatternString = '';
+    this.updateUI();
+  }
+  
+  addDigit(digit, isUp, level, price) {
+    this.globalTickIndex++;
+    
+    // Verificar si el sistema está pausado
+    if (this.shouldSkipSignal()) {
+        return;
+    }
+    
+    // Agregar dígito con toda la información
+    const digitData = {
+      index: this.globalTickIndex,
+      digit: digit,
+      isUp: isUp,
+      level: level,
+      price: parseFloat(price),
+      timestamp: Date.now(),
+      isZero: digit === 0,
+      rawPrice: price
+    };
+    
+    this.digitWindow.push(digitData);
+    
+    // Mantener ventana manejable
+    if (this.digitWindow.length > this.WINDOW_SIZE) {
+      this.digitWindow.shift();
+    }
+    
+    // Actualizar UI de ventana
+    this.updateWindowDisplay();
+    
+    // Buscar patrones en toda la ventana
+    this.scanAllPatternsInWindow();
+    
+    // Actualizar timestamp de último escaneo
+    this.lastPatternScan = Date.now();
+    this.updateUI();
+  }
+  
+  shouldSkipSignal() {
+      // Verificar si el sistema está pausado
+      if (tradingPaused) {
+          const now = Date.now();
+          if (pauseUntil && now < pauseUntil) {
+              const remainingSeconds = Math.round((pauseUntil - now) / 1000);
+              if (remainingSeconds % 5 === 0) {
+                  console.log(`⏸️ Análisis ignorado - Sistema en pausa por ${remainingSeconds}s más`);
+              }
+              return true;
+          } else {
+              // Si el tiempo de pausa ya pasó, restaurar estado
+              tradingPaused = false;
+              pauseUntil = null;
+              if (pauseTimeout) {
+                  clearTimeout(pauseTimeout);
+                  pauseTimeout = null;
+              }
+              updateTradingSignalStatus();
+              return false;
+          }
+      }
+      return false;
+  }
+  
+  scanAllPatternsInWindow() {
+    const windowSize = this.digitWindow.length;
+    
+    // Necesitamos al menos 4 dígitos
+    if (windowSize < 4) {
+      this.updateConsecutiveStatus();
+      return;
+    }
+    
+    // Escanear todas las posibles secuencias de 4 consecutivos
+    for (let startIdx = 0; startIdx <= windowSize - 4; startIdx++) {
+      const sequence = this.digitWindow.slice(startIdx, startIdx + 4);
+      
+      // Verificar que sean consecutivos (índices secuenciales)
+      const isConsecutive = this.areTicksConsecutive(sequence);
+      if (!isConsecutive) continue;
+      
+      // Verificar distanciamiento mínimo desde última señal
+      const lastIndex = sequence[3].index;
+      if (lastIndex - this.lastSignalTickIndex < this.MIN_TICKS_BETWEEN_SIGNALS) {
+        continue; // Demasiado cerca de última señal
+      }
+      
+      // Verificar patrón
+      if (this.isValidPattern(sequence)) {
+        console.log(`🎯 PATRÓN ALTERNADO DETECTADO en ticks ${sequence[0].index}-${sequence[3].index}`);
+        this.lastValidSequence = sequence;
+        this.patternsDetected++;
+        this.analyzeAndSignal(sequence);
+        this.lastSignalTickIndex = lastIndex;
+        this.updateUI();
+        break; // Procesar solo UN patrón por tick actual
+      }
+    }
+    
+    this.updateConsecutiveStatus();
+  }
+  
+  areTicksConsecutive(sequence) {
+    for (let i = 1; i < sequence.length; i++) {
+      if (sequence[i].index !== sequence[i-1].index + 1) {
+        return false;
+      }
+    }
+    return true;
+  }
+  
+  updateConsecutiveStatus() {
+    // Encontrar la secuencia consecutiva más larga al final
+    let maxConsecutive = 0;
+    let currentConsecutive = 0;
+    
+    for (let i = this.digitWindow.length - 1; i >= 0; i--) {
+      if (i === this.digitWindow.length - 1) {
+        currentConsecutive = 1;
+      } else if (this.digitWindow[i].index === this.digitWindow[i + 1].index - 1) {
+        currentConsecutive++;
+      } else {
+        break;
+      }
+      
+      if (currentConsecutive > maxConsecutive) {
+        maxConsecutive = currentConsecutive;
+      }
+    }
+    
+    // Actualizar UI
+    const consecutiveElement = document.getElementById('consecutive-status');
+    if (consecutiveElement) {
+      if (maxConsecutive >= 4) {
+        consecutiveElement.innerHTML = `<span style="color:#2ecc71">✓ ${maxConsecutive} ticks consecutivos</span>`;
+      } else if (maxConsecutive > 0) {
+        consecutiveElement.innerHTML = `<span style="color:#f39c12">${maxConsecutive}/4 ticks consecutivos</span>`;
+      } else {
+        consecutiveElement.innerHTML = `<span style="color:#7f8c8d">Esperando ticks consecutivos...</span>`;
+      }
+    }
+  }
+  
+  isValidPattern(sequence) {
+    // 1. Deben ser EXACTAMENTE 4 dígitos
+    if (sequence.length !== 4) {
+      console.log(`❌ Secuencia no tiene 4 dígitos: ${sequence.length}`);
+      return false;
+    }
+    
+    // 2. Verificar que sean realmente consecutivos
+    if (!this.areTicksConsecutive(sequence)) {
+      console.log(`❌ Dígitos no son consecutivos`);
+      return false;
+    }
+    
+    // 3. Composición: 2 azules + 2 rojos
+    const blueCount = sequence.filter(d => d.isUp).length;
+    const redCount = sequence.filter(d => !d.isUp).length;
+    if (blueCount !== 2 || redCount !== 2) {
+      console.log(`❌ Composición inválida: ${blueCount} azules, ${redCount} rojos`);
+      this.showPatternAnalysis(sequence, false, `Composición inválida: ${blueCount}A ${redCount}R`);
+      return false;
+    }
+    
+    // 4. NUEVO FILTRO: Verificar patrón alternado (R-A-R-A o A-R-A-R)
+    const patternString = sequence.map(d => d.isUp ? 'A' : 'R').join('');
+    this.lastPatternString = patternString;
+    
+    // Actualizar UI del último patrón
+    const lastPatternElement = document.getElementById('last-pattern');
+    if (lastPatternElement) {
+      lastPatternElement.innerHTML = `<span style="font-weight:bold; ${this.ALLOWED_PATTERNS.includes(patternString) ? 'color:#2ecc71' : 'color:#e74c3c'}">${patternString}</span>`;
+    }
+    
+    if (!this.ALLOWED_PATTERNS.includes(patternString)) {
+      console.log(`❌ PATRÓN NO ALTERNADO: ${patternString} (requerido: R-A-R-A o A-R-A-R)`);
+      this.patternsRejected++;
+      this.showPatternAnalysis(sequence, false, `Patrón ${patternString} no es alternado (R-A-R-A o A-R-A-R)`);
+      return false;
+    }
+    
+    console.log(`✅ PATRÓN ALTERNADO VÁLIDO: ${patternString}`);
+    
+    // 5. Restricción anti-0
+    if (sequence.some(d => d.isZero)) {
+      console.log(`❌ Dígito 0 detectado`);
+      this.showPatternAnalysis(sequence, false, "Dígito 0 detectado");
+      return false;
+    }
+    
+    // 6. Separar por color
+    const blues = sequence.filter(d => d.isUp);
+    const reds = sequence.filter(d => !d.isUp);
+    
+    // 7. Verificar direcciones (considerando niveles)
+    const blueDirection = this.calculateConsistentDirectionWithLevels(blues);
+    const redDirection = this.calculateConsistentDirectionWithLevels(reds);
+    
+    if (!blueDirection || !redDirection) {
+      console.log(`❌ Dirección no clara: Azules=${blueDirection}, Rojos=${redDirection}`);
+      this.showPatternAnalysis(sequence, false, "Dirección no clara");
+      return false;
+    }
+    
+    // 8. Ambas direcciones deben coincidir
+    if (blueDirection !== redDirection) {
+      console.log(`❌ Direcciones no coinciden: Azules=${blueDirection}, Rojos=${redDirection}`);
+      this.showPatternAnalysis(sequence, false, `Direcciones no coinciden: A=${blueDirection}, R=${redDirection}`);
+      return false;
+    }
+    
+    // 9. Validar concordancia precio (incluyendo niveles)
+    const bluePriceValid = this.verifyPriceDirectionWithLevels(blues, 'AZUL');
+    const redPriceValid = this.verifyPriceDirectionWithLevels(reds, 'ROJO');
+    
+    if (!bluePriceValid || !redPriceValid) {
+      console.log(`❌ Validación precio falló`);
+      this.showPatternAnalysis(sequence, false, "Validación precio falló");
+      return false;
+    }
+    
+    // 10. Análisis de niveles
+    if (!this.analyzeLevelPattern(sequence)) {
+      console.log(`❌ Patrón de niveles inválido`);
+      this.showPatternAnalysis(sequence, false, "Patrón de niveles inválido");
+      return false;
+    }
+    
+    console.log(`✅ PATRÓN COMPLETAMENTE VÁLIDO! Dirección: ${blueDirection}`);
+    this.showPatternAnalysis(sequence, true, null);
+    return true;
+  }
+  
+  calculateConsistentDirectionWithLevels(colorDigits) {
+    if (colorDigits.length < 2) return null;
+    
+    let direction = null;
+    const isBlue = colorDigits[0].isUp;
+    
+    for (let i = 0; i < colorDigits.length - 1; i++) {
+      const current = colorDigits[i];
+      const next = colorDigits[i + 1];
+      
+      // Calcular dirección considerando dígito Y nivel
+      let currentDirection = null;
+      
+      // Calcular cambio de dígito
+      const digitChange = next.digit - current.digit;
+      
+      // Calcular cambio de nivel (max=2, mid=1, min=0)
+      const levelValue = (level) => {
+        switch(level) {
+          case 'max': return 2;
+          case 'mid': return 1;
+          case 'min': return 0;
+          default: return 1;
+        }
+      };
+      
+      const currentLevelValue = levelValue(current.level);
+      const nextLevelValue = levelValue(next.level);
+      const levelChange = nextLevelValue - currentLevelValue;
+      
+      // Para azules
+      if (isBlue) {
+        if (digitChange > 0) {
+          currentDirection = 'UP';
+        } else if (digitChange < 0) {
+          currentDirection = 'DOWN';
+        } else {
+          // Dígitos iguales, usar nivel
+          if (levelChange > 0) {
+            currentDirection = 'UP';
+          } else if (levelChange < 0) {
+            currentDirection = 'DOWN';
+          } else {
+            currentDirection = 'EQUAL';
+          }
+        }
+      }
+      // Para rojos (lógica inversa)
+      else {
+        if (digitChange < 0) {
+          currentDirection = 'UP';
+        } else if (digitChange > 0) {
+          currentDirection = 'DOWN';
+        } else {
+          // Dígitos iguales, usar nivel (inverso para rojos)
+          if (levelChange > 0) {
+            currentDirection = 'DOWN'; // Nivel mejoró pero para rojos es DOWN
+          } else if (levelChange < 0) {
+            currentDirection = 'UP'; // Nivel empeoró pero para rojos es UP
+          } else {
+            currentDirection = 'EQUAL';
+          }
+        }
+      }
+      
+      if (currentDirection === 'EQUAL') continue;
+      
+      if (direction === null) {
+        direction = currentDirection;
+      } else if (direction !== currentDirection) {
+        return null; // Cambio de dirección
+      }
+    }
+    
+    return direction;
+  }
+  
+  verifyPriceDirectionWithLevels(colorDigits, colorType) {
+    if (colorDigits.length < 2) return true;
+    
+    for (let i = 0; i < colorDigits.length - 1; i++) {
+      const current = colorDigits[i];
+      const next = colorDigits[i + 1];
+      
+      const priceWentUp = next.price > current.price;
+      const priceWentDown = next.price < current.price;
+      
+      // Para azules
+      if (colorType === 'AZUL') {
+        const digitWentUp = next.digit > current.digit;
+        const levelImproved = (
+          (next.level === 'max' && current.level !== 'max') ||
+          (next.level === 'mid' && current.level === 'min')
+        );
+        
+        if ((digitWentUp || levelImproved) && !priceWentUp) {
+          console.log(`🔵 ${colorType}: Contradicción! Mejoró pero precio no subió`);
+          return false;
+        }
+        
+        const digitWentDown = next.digit < current.digit;
+        const levelWorsened = (
+          (next.level === 'min' && current.level !== 'min') ||
+          (next.level === 'mid' && current.level === 'max')
+        );
+        
+        if ((digitWentDown || levelWorsened) && !priceWentDown) {
+          console.log(`🔵 ${colorType}: Contradicción! Empeoró pero precio no bajó`);
+          return false;
+        }
+      }
+      // Para rojos
+      else {
+        const digitWentDown = next.digit < current.digit;
+        const levelImproved = (
+          (next.level === 'max' && current.level !== 'max') ||
+          (next.level === 'mid' && current.level === 'min')
+        );
+        
+        if ((digitWentDown || levelImproved) && !priceWentUp) {
+          console.log(`🔴 ${colorType}: Contradicción! Mejoró pero precio no subió`);
+          return false;
+        }
+        
+        const digitWentUp = next.digit > current.digit;
+        const levelWorsened = (
+          (next.level === 'min' && current.level !== 'min') ||
+          (next.level === 'mid' && current.level === 'max')
+        );
+        
+        if ((digitWentUp || levelWorsened) && !priceWentDown) {
+          console.log(`🔴 ${colorType}: Contradicción! Empeoró pero precio no bajó`);
+          return false;
+        }
+      }
+    }
+    
+    return true;
+  }
+  
+  analyzeLevelPattern(sequence) {
+    // Analizar patrón de niveles
+    const levels = sequence.map(d => d.level);
+    
+    // Validación básica: no más de 2 máximos o mínimos seguidos
+    let maxCount = 0;
+    let minCount = 0;
+    
+    for (let i = 0; i < levels.length - 1; i++) {
+      if (levels[i] === 'max' && levels[i + 1] === 'max') maxCount++;
+      if (levels[i] === 'min' && levels[i + 1] === 'min') minCount++;
+    }
+    
+    if (maxCount > 1 || minCount > 1) {
+      console.log(`⚠️ Patrón de niveles cuestionable: ${maxCount} máx seguidos, ${minCount} mín seguidos`);
+    }
+    
+    // Aceptar cualquier combinación por ahora
+    return true;
+  }
+  
+  analyzeAndSignal(sequence) {
+    // Determinar dirección final
+    const blues = sequence.filter(d => d.isUp);
+    const blueDirection = this.calculateConsistentDirectionWithLevels(blues);
+    
+    if (!blueDirection) {
+      console.error('❌ Error: No se pudo determinar dirección para señal');
+      return;
+    }
+    
+    const signalType = blueDirection === 'UP' ? 'CALL' : 'PUT';
+    
+    console.log(`🚨 SEÑAL ${signalType} GENERADA!`);
+    console.log(`📊 Patrón: ${sequence.map(d => `${d.digit}${d.isUp ? '▲' : '▼'}(${d.level})`).join(' → ')}`);
+    console.log(`🎯 Dirección: ${blueDirection} | Ticks: ${sequence[0].index}-${sequence[3].index}`);
+    
+    // Activar señal visual
+    this.activateSignal(signalType);
+    
+    // Guardar datos para el historial
+    const operationData = {
+        id: Date.now(),
+        timestamp: new Date().toLocaleTimeString(),
+        sequence: sequence.map(d => ({
+          digit: d.digit,
+          isUp: d.isUp,
+          level: d.level,
+          price: d.rawPrice
+        })),
+        pattern: this.lastPatternString,
+        blueDirection: blueDirection,
+        redDirection: this.calculateConsistentDirectionWithLevels(sequence.filter(d => !d.isUp)),
+        signal: signalType,
+        ticks: `${sequence[0].index}-${sequence[3].index}`,
+        result: null,
+        profit: null,
+        contractId: null
+    };
+    
+    // Guardar referencia temporal
+    window.currentOperationData = operationData;
+    
+    // Ejecutar operación automática si trading está activo
+    if (tradingActive && !tradingPaused) {
+        console.log(`💼 EJECUTANDO ${signalType} con stake $${tradingStake.toFixed(2)}`);
+        
+        // Marcar que hay una operación en curso
+        currentOperation = {
+            type: signalType,
+            direction: blueDirection,
+            stake: tradingStake,
+            timestamp: Date.now(),
+            status: 'pending',
+            patternTicks: `${sequence[0].index}-${sequence[3].index}`,
+            pattern: this.lastPatternString
+        };
+        
+        // Configurar tiempo de pausa automática
+        const PAUSE_DURATION = 8000;
+        tradingPaused = true;
+        pauseUntil = Date.now() + PAUSE_DURATION;
+        
+        // Configurar timeout para reanudación automática
+        if (pauseTimeout) {
+            clearTimeout(pauseTimeout);
+        }
+        pauseTimeout = setTimeout(() => {
+            if (tradingPaused) {
+                console.log('⏰ Timeout de pausa - Reanudando automáticamente');
+                tradingPaused = false;
+                pauseUntil = null;
+                currentOperation = null;
+                updateTradingSignalStatus();
+            }
+        }, PAUSE_DURATION + 2000);
+        
+        updateTradingSignalStatus();
+        
+        window.operarAutomatico(signalType === 'CALL' ? 'UP' : 'DOWN', tradingStake);
+    }
+  }
+  
+  activateSignal(type) {
+    if (type === 'CALL') {
+      signalActiveUp = true;
+      const signalBox = document.getElementById('signal-up-box');
+      signalBox.className = 'signal-card signal-up glow';
+      document.getElementById('signal-up-text').textContent = 'SEÑAL ACTIVA';
+      
+      const statusElement = signalBox.querySelector('.signal-status');
+      if (statusElement) {
+        statusElement.innerHTML = '<i class="fas fa-play-circle"></i> Activo';
+        statusElement.style.color = '#27ae60';
+      }
+      
+      setTimeout(() => {
+        signalBox.className = 'signal-card signal-up';
+        document.getElementById('signal-up-text').textContent = 'ESPERANDO';
+        if (statusElement) {
+          statusElement.innerHTML = '<i class="fas fa-pause-circle"></i> Inactivo';
+          statusElement.style.color = '';
+        }
+        signalActiveUp = false;
+      }, 5000);
+    } else {
+      signalActiveDown = true;
+      const signalBox = document.getElementById('signal-down-box');
+      signalBox.className = 'signal-card signal-down glow';
+      document.getElementById('signal-down-text').textContent = 'SEÑAL ACTIVA';
+      
+      const statusElement = signalBox.querySelector('.signal-status');
+      if (statusElement) {
+        statusElement.innerHTML = '<i class="fas fa-play-circle"></i> Activo';
+        statusElement.style.color = '#27ae60';
+      }
+      
+      setTimeout(() => {
+        signalBox.className = 'signal-card signal-down';
+        document.getElementById('signal-down-text').textContent = 'ESPERANDO';
+        if (statusElement) {
+          statusElement.innerHTML = '<i class="fas fa-pause-circle"></i> Inactivo';
+          statusElement.style.color = '';
+        }
+        signalActiveDown = false;
+      }, 5000);
+    }
+  }
+  
+  showPatternAnalysis(sequence, isValid, rejectionReason = null) {
+    const analysisDiv = document.getElementById('green-analysis-content');
+    
+    // Obtener patrón como string
+    const patternString = sequence.map(d => d.isUp ? 'A' : 'R').join('');
+    const isAlternating = this.ALLOWED_PATTERNS.includes(patternString);
+    
+    let html = `
+      <div class="analysis-phase">
+        <div class="phase-title">
+          <i class="fas fa-search"></i>
+          ANÁLISIS V3 - Último escaneo:
+        </div>
+        <div class="phase-content">
+    `;
+    
+    // Mostrar los 4 dígitos con sus colores y niveles
+    sequence.forEach((digitObj, index) => {
+      const colorClass = digitObj.isUp ? 'analysis-blue' : 'analysis-red';
+      const isZero = digitObj.isZero;
+      const highlightStyle = isZero ? 'box-shadow: 0 0 0 2px gold;' : '';
+      const levelText = digitObj.level === 'max' ? 'MAX' : 
+                       digitObj.level === 'min' ? 'MIN' : 'MID';
+      const levelColor = digitObj.level === 'max' ? '#3498db' : 
+                        digitObj.level === 'min' ? '#e74c3c' : '#2ecc71';
+      
+      html += `
+        <div class="phase-digit-container" title="Tick ${digitObj.index}: ${digitObj.digit}${digitObj.isUp ? '▲' : '▼'} - ${digitObj.level} - $${digitObj.price.toFixed(6)}">
+          <div class="phase-digit ${colorClass}" style="${highlightStyle}">
+            ${digitObj.digit}
+          </div>
+          <div class="phase-digit-header" style="background: rgba(${levelColor.replace('#', '').match(/.{2}/g).map(c => parseInt(c, 16)).join(', ')}, 0.2); color: ${levelColor};">
+            ${levelText}
+          </div>
+        </div>
+      `;
+    });
+    
+    html += `</div></div>`;
+    
+    // MOSTRAR ANÁLISIS DEL NUEVO FILTRO DE PATRÓN
+    html += `
+      <div class="pattern-filter ${isAlternating ? 'pattern-alternating' : 'pattern-non-alternating'}">
+        <div style="text-align: center; margin-bottom: 10px;">
+          <div style="font-weight: bold; margin-bottom: 5px; color: ${isAlternating ? '#2ecc71' : '#e74c3c'}">
+            <i class="fas fa-${isAlternating ? 'check' : 'times'}-circle"></i>
+            FILTRO DE PATRÓN ALTERNADO
+          </div>
+          <div class="pattern-sequence">
+    `;
+    
+    // Mostrar patrón visualmente
+    patternString.split('').forEach((char, idx) => {
+      const isA = char === 'A';
+      const color = isA ? '#3498db' : '#e74c3c';
+      const bgColor = isA ? 'rgba(52, 152, 219, 0.2)' : 'rgba(231, 76, 60, 0.2)';
+      const sequenceDigit = sequence[idx].digit;
+      
+      html += `
+        <div class="pattern-char ${isA ? 'pattern-char-a' : 'pattern-char-r'}" 
+             style="position: relative;" 
+             title="Dígito ${idx+1}: ${sequenceDigit} (${isA ? 'AZUL' : 'ROJO'})">
+          ${char}
+          <div style="position: absolute; top: -15px; font-size: 0.7rem; color: ${color};">
+            ${sequenceDigit}
+          </div>
+        </div>
+      `;
+      
+      // Agregar flecha entre elementos (excepto el último)
+      if (idx < patternString.length - 1) {
+        html += `<div style="color: #95a5a6; margin: 0 5px;">→</div>`;
+      }
+    });
+    
+    html += `
+          </div>
+          <div style="margin-top: 8px; font-size: 0.9rem; color: ${isAlternating ? '#2ecc71' : '#e74c3c'}">
+            <strong>${patternString}</strong>
+            ${isAlternating ? '✓ PATRÓN PERMITIDO' : '✗ PATRÓN RECHAZADO'}
+          </div>
+          <div style="font-size: 0.8rem; color: #95a5a6; margin-top: 3px;">
+            Permitidos: <strong>R-A-R-A</strong> o <strong>A-R-A-R</strong>
+          </div>
+        </div>
+      </div>
+    `;
+    
+    // Mostrar composición
+    const blueCount = sequence.filter(d => d.isUp).length;
+    const redCount = sequence.filter(d => !d.isUp).length;
+    
+    html += `
+      <div class="pattern-info ${isValid ? 'pattern-valid' : 'pattern-invalid'}">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+          <div><strong>Composición:</strong> <span style="color:#3498db">${blueCount} azules</span> / <span style="color:#e74c3c">${redCount} rojos</span></div>
+          <div><strong>Ticks:</strong> ${sequence[0].index}-${sequence[3].index}</div>
+        </div>
+    `;
+    
+    if (isValid && isAlternating) {
+      const blues = sequence.filter(d => d.isUp);
+      const reds = sequence.filter(d => !d.isUp);
+      const blueDirection = this.calculateConsistentDirectionWithLevels(blues);
+      const redDirection = this.calculateConsistentDirectionWithLevels(reds);
+      
+      const signalColor = blueDirection === 'UP' ? '#3498db' : '#e74c3c';
+      const signalText = blueDirection === 'UP' ? 'CALL (UP)' : 'PUT (DOWN)';
+      
+      html += `
+        <div style="text-align: center; padding: 10px; background: rgba(${signalColor.replace('#', '').match(/.{2}/g).map(c => parseInt(c, 16)).join(', ')}, 0.1); border-radius: 4px; margin: 8px 0;">
+          <div style="font-size: 1.1rem; color: ${signalColor}; font-weight: bold; margin-bottom: 5px;">
+            <i class="fas fa-check-circle"></i> PATRÓN VÁLIDO COMPLETO
+          </div>
+          <div style="font-size: 1.3rem; font-weight: bold; color: ${signalColor};">${signalText}</div>
+          <div style="font-size: 0.8rem; color: #95a5a6; margin-top: 3px;">
+            Dirección: ${blueDirection} | Patrón: ${patternString} | Precio: ✓
+          </div>
+        </div>
+      `;
+    } else if (!isAlternating) {
+      html += `
+        <div style="text-align: center; padding: 10px; background: rgba(243, 156, 18, 0.1); border-radius: 4px; margin: 8px 0;">
+          <div style="font-size: 1rem; color: #f39c12; font-weight: bold; margin-bottom: 5px;">
+            <i class="fas fa-ban"></i> PATRÓN RECHAZADO POR FILTRO
+          </div>
+          <div style="font-size: 0.9rem; color: #f39c12;">${rejectionReason || `Patrón ${patternString} no es alternado`}</div>
+          <div style="font-size: 0.8rem; color: #f39c12; margin-top: 3px;">
+            Solo se permiten: R-A-R-A o A-R-A-R
+          </div>
+        </div>
+      `;
+    } else {
+      html += `
+        <div style="text-align: center; padding: 10px; background: rgba(243, 156, 18, 0.1); border-radius: 4px; margin: 8px 0;">
+          <div style="font-size: 1rem; color: #f39c12; font-weight: bold; margin-bottom: 5px;">
+            <i class="fas fa-times-circle"></i> PATRÓN INVÁLIDO
+          </div>
+          <div style="font-size: 0.9rem; color: #f39c12;">${rejectionReason || 'No cumple requisitos'}</div>
+        </div>
+      `;
+    }
+    
+    html += `</div>`;
+    
+    // Mostrar información de análisis
+    html += `
+      <div class="analysis-phase">
+        <div class="phase-title">
+          <i class="fas fa-info-circle"></i>
+          Detalles del Análisis V3:
+        </div>
+        <div class="phase-content" style="flex-direction: column; align-items: flex-start; font-size: 0.85rem;">
+          <div style="margin-bottom: 4px;">
+            <i class="fas fa-check" style="color: #2ecc71;"></i>
+            <span style="color: #95a5a6;">Consecutividad:</span>
+            <span style="color: #2ecc71; margin-left: 5px;">✓ 4 ticks consecutivos</span>
+          </div>
+          <div style="margin-bottom: 4px;">
+            <i class="fas fa-check" style="color: #2ecc71;"></i>
+            <span style="color: #95a5a6;">Composición:</span>
+            <span style="color: #2ecc71; margin-left: 5px;">✓ 2 azules + 2 rojos</span>
+          </div>
+          <div style="margin-bottom: 4px;">
+            <i class="fas fa-${isAlternating ? 'check' : 'times'}" style="color: ${isAlternating ? '#2ecc71' : '#e74c3c'}"></i>
+            <span style="color: #95a5a6;">Patrón alternado:</span>
+            <span style="color: ${isAlternating ? '#2ecc71' : '#e74c3c'}; margin-left: 5px;">
+              ${isAlternating ? '✓ R-A-R-A/A-R-A-R' : '✗ No alternado'}
+            </span>
+          </div>
+          <div style="margin-bottom: 4px;">
+            <i class="fas fa-ban" style="color: ${sequence.some(d => d.isZero) ? '#e74c3c' : '#2ecc71'}"></i>
+            <span style="color: #95a5a6;">Dígito 0:</span>
+            <span style="color: ${sequence.some(d => d.isZero) ? '#e74c3c' : '#2ecc71'}; margin-left: 5px;">
+              ${sequence.some(d => d.isZero) ? '✗ Detectado' : '✓ No presente'}
+            </span>
+          </div>
+        </div>
+      </div>
+    `;
+    
+    analysisDiv.innerHTML = html;
+  }
+  
+  updateWindowDisplay() {
+    const windowElement = document.getElementById('window-active');
+    if (windowElement) {
+      windowElement.textContent = `${this.digitWindow.length} dígitos`;
+    }
+    
+    const patternsElement = document.getElementById('patterns-detected');
+    if (patternsElement) {
+      patternsElement.textContent = this.patternsDetected;
+    }
+    
+    const rejectedElement = document.getElementById('rejected-patterns');
+    if (rejectedElement) {
+      rejectedElement.textContent = this.patternsRejected;
+    }
+    
+    const lastScanElement = document.getElementById('last-scan');
+    if (lastScanElement) {
+      if (this.lastPatternScan) {
+        const secondsAgo = Math.floor((Date.now() - this.lastPatternScan) / 1000);
+        lastScanElement.innerHTML = `<span style="color:#${secondsAgo < 5 ? '2ecc71' : 'f39c12'}">Hace ${secondsAgo}s</span>`;
+      } else {
+        lastScanElement.textContent = '-';
+      }
+    }
+  }
+  
+  updateUI() {
+    // Actualizar indicadores de estado
+    const modeElement = document.getElementById('analysis-mode');
+    if (modeElement) {
+      modeElement.innerHTML = `<i class="fas fa-filter"></i> FILTRO ALTERNADO (${this.patternsDetected}/${this.patternsRejected})`;
+    }
+    
+    const alternatingElement = document.getElementById('alternating-status');
+    if (alternatingElement) {
+      if (this.lastPatternString) {
+        const isValid = this.ALLOWED_PATTERNS.includes(this.lastPatternString);
+        alternatingElement.innerHTML = isValid ? 
+          `<span style="color:#2ecc71">✓ ${this.lastPatternString}</span>` :
+          `<span style="color:#e74c3c">✗ ${this.lastPatternString}</span>`;
+      } else {
+        alternatingElement.innerHTML = `<span style="color:#f39c12">VERIFICANDO...</span>`;
+      }
+    }
+    
+    const filterElement = document.getElementById('filter-status');
+    if (filterElement) {
+      filterElement.innerHTML = `<span style="color:#2ecc71">ACTIVO (R-A-R-A/A-R-A-R)</span>`;
+    }
+    
+    const zeroElement = document.getElementById('zero-restriction-display');
+    if (zeroElement) {
+      const hasZero = this.digitWindow.some(d => d.isZero);
+      zeroElement.innerHTML = hasZero ? 
+        `<span style="color:#e74c3c"><i class="fas fa-exclamation-triangle"></i> 0 DETECTADO</span>` :
+        `<span style="color:#2ecc71"><i class="fas fa-check-circle"></i> ACTIVA</span>`;
+    }
+    
+    const finalSignalElement = document.getElementById('final-signal-display');
+    if (finalSignalElement && this.lastValidSequence && this.ALLOWED_PATTERNS.includes(this.lastPatternString)) {
+      const blues = this.lastValidSequence.filter(d => d.isUp);
+      const blueDirection = this.calculateConsistentDirectionWithLevels(blues);
+      if (blueDirection) {
+        const color = blueDirection === 'UP' ? '#3498db' : '#e74c3c';
+        const text = blueDirection === 'UP' ? 'CALL (UP)' : 'PUT (DOWN)';
+        finalSignalElement.innerHTML = `<span style="color:${color}; font-weight:bold;">${text} (${this.lastPatternString})</span>`;
+      }
+    }
+    
+    const priceValidationElement = document.getElementById('price-validation-display');
+    if (priceValidationElement && this.lastValidSequence && this.ALLOWED_PATTERNS.includes(this.lastPatternString)) {
+      const blues = this.lastValidSequence.filter(d => d.isUp);
+      const reds = this.lastValidSequence.filter(d => !d.isUp);
+      const bluePriceValid = this.verifyPriceDirectionWithLevels(blues, 'AZUL');
+      const redPriceValid = this.verifyPriceDirectionWithLevels(reds, 'ROJO');
+      
+      if (bluePriceValid && redPriceValid) {
+        priceValidationElement.innerHTML = `<span style="color:#2ecc71"><i class="fas fa-check-circle"></i> ✓ VÁLIDO</span>`;
+      } else {
+        priceValidationElement.innerHTML = `<span style="color:#e74c3c"><i class="fas fa-times-circle"></i> ✗ INVALIDO</span>`;
+      }
+    }
+  }
+}
+
+// ====================== SISTEMA DE HISTORIAL DE OPERACIONES ======================
+
+function showOperationsHistory() {
+    document.getElementById('operations-history-panel').style.display = 'block';
+    document.getElementById('overlay').style.display = 'block';
+    renderOperationsHistory();
+}
+
+function closeOperationsHistory() {
+    document.getElementById('operations-history-panel').style.display = 'none';
+    document.getElementById('overlay').style.display = 'none';
+}
+
+function addOperationToHistory(operationData) {
+    if (!operationData) return;
+    
+    operationsHistory.unshift(operationData);
+    
+    if (operationsHistory.length > 50) {
+        operationsHistory.pop();
+    }
+    
+    try {
+        localStorage.setItem('operationsHistory', JSON.stringify(operationsHistory));
+    } catch (e) {
+        console.log('No se pudo guardar en localStorage:', e);
+    }
+    
+    renderOperationsHistory();
+}
+
+function renderOperationsHistory() {
+    const contentDiv = document.getElementById('operations-history-content');
+    
+    if (!contentDiv) {
+        console.warn('Elemento operations-history-content no encontrado');
+        return;
+    }
+    
+    if (operationsHistory.length === 0) {
+        contentDiv.innerHTML = `
+            <div class="empty-history">
+                <i class="fas fa-clipboard-list"></i>
+                <h3>No hay operaciones registradas</h3>
+                <p>Las operaciones realizadas aparecerán aquí</p>
+            </div>
+        `;
+        return;
+    }
+    
+    let html = `<div class="operations-list">`;
+    
+    operationsHistory.forEach((operation, index) => {
+        const isWin = operation.result === 'WIN';
+        const operationNumber = operationsHistory.length - index;
+        
+        let operationText = '';
+        if (operation.blueDirection === 'UP' && operation.redDirection === 'UP') {
+            operationText = 'ALZA (CALL)';
+        } else if (operation.blueDirection === 'DOWN' && operation.redDirection === 'DOWN') {
+            operationText = 'BAJA (PUT)';
+        } else {
+            operationText = 'INDEFINIDO';
+        }
+        
+        // Determinar color del patrón
+        const patternColor = operation.pattern === 'RARA' ? '#e74c3c' : 
+                           operation.pattern === 'ARAR' ? '#3498db' : '#9b59b6';
+        
+        html += `
+            <div class="operation-card ${isWin ? 'win' : 'loss'}">
+                <div class="operation-header">
+                    <div class="operation-number">OPERACIÓN ${operationNumber} (V3)</div>
+                    <div class="operation-status ${isWin ? 'status-win' : 'status-loss'}">
+                        ${isWin ? '✅ GANADA' : '❌ PERDIDA'}
+                    </div>
+                </div>
+                
+                <div class="operation-details">
+                    <div class="detail-group">
+                        <div class="detail-label">
+                            <i class="fas fa-filter"></i> Patrón V3
+                        </div>
+                        <div class="detail-value" style="color: ${patternColor}; font-weight: bold;">
+                            ${operation.pattern} (${operation.pattern === 'RARA' ? 'R-A-R-A' : 'A-R-A-R'})
+                        </div>
+                    </div>
+                    
+                    <div class="detail-group">
+                        <div class="detail-label">
+                            <i class="fas fa-clock"></i> Hora
+                        </div>
+                        <div class="detail-value">${operation.timestamp}</div>
+                    </div>
+                    
+                    <div class="detail-group">
+                        <div class="detail-label">
+                            <i class="fas fa-hashtag"></i> Ticks
+                        </div>
+                        <div class="detail-value">${operation.ticks}</div>
+                    </div>
+                </div>
+                
+                <div class="detail-group">
+                    <div class="detail-label">
+                        <i class="fas fa-list-ol"></i> 4 Dígitos (Alternados)
+                    </div>
+                    <div class="digits-container">
+        `;
+        
+        operation.sequence.forEach((digitObj, idx) => {
+            const isZero = digitObj.digit === 0;
+            const colorClass = digitObj.isUp ? 'digit-blue' : 'digit-red';
+            const zeroClass = isZero ? 'digit-zero' : '';
+            const levelText = digitObj.level === 'max' ? 'MAX' : 
+                            digitObj.level === 'min' ? 'MIN' : 'MID';
+            
+            html += `
+                <div class="digit-badge ${colorClass} ${zeroClass}" title="${digitObj.isUp ? 'AZUL' : 'ROJO'} - ${digitObj.level} - $${digitObj.price}">
+                    <div class="digit-value">${digitObj.digit}</div>
+                    <div class="digit-header">${levelText}</div>
+                </div>
+            `;
+        });
+        
+        html += `
+                    </div>
+                </div>
+                
+                <div class="operation-details">
+                    <div class="detail-group">
+                        <div class="detail-label">
+                            <i class="fas fa-arrow-up" style="color: #3498db"></i> Dirección Azules
+                        </div>
+                        <div class="detail-value" style="color: ${operation.blueDirection === 'UP' ? '#3498db' : '#e74c3c'};">
+                            ${operation.blueDirection === 'UP' ? '▲ ALZA' : '▼ BAJA'}
+                        </div>
+                    </div>
+                    
+                    <div class="detail-group">
+                        <div class="detail-label">
+                            <i class="fas fa-arrow-down" style="color: #e74c3c"></i> Dirección Rojos
+                        </div>
+                        <div class="detail-value" style="color: ${operation.redDirection === 'UP' ? '#3498db' : '#e74c3c'};">
+                            ${operation.redDirection === 'UP' ? '▲ ALZA' : '▼ BAJA'}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="operation-result ${isWin ? 'result-win' : 'result-loss'}">
+                    <div>Operación: <strong>${operationText}</strong></div>
+                    <div>Patrón: <strong style="color: ${patternColor}">${operation.pattern}</strong></div>
+                    <div>Resultado: <strong>${isWin ? 'GANADA' : 'PERDIDA'}</strong></div>
+                    ${operation.profit !== null ? `<div>Ganancia: <strong>${operation.profit > 0 ? '+' : ''}$${operation.profit.toFixed(2)}</strong></div>` : ''}
+                    ${operation.contractId ? `<div style="font-size: 0.8rem; color: #95a5a6; margin-top: 3px;">Contract ID: ${operation.contractId}</div>` : ''}
+                </div>
+            </div>
+        `;
+    });
+    
+    html += `</div>`;
+    contentDiv.innerHTML = html;
+}
+
+function loadOperationsHistory() {
+    try {
+        const saved = localStorage.getItem('operationsHistory');
+        if (saved) {
+            operationsHistory = JSON.parse(saved);
+            console.log(`📚 Historial cargado: ${operationsHistory.length} operaciones`);
+        }
+    } catch (e) {
+        console.log('No se pudo cargar el historial:', e);
+    }
+}
+
+// ====================== SISTEMA DE CABECERAS MÁXIMO/MÍNIMO ======================
+
+let priceHistory = [];
+let showHeaders = true;
+const greenHeaderStrategy = new GreenHeaderStrategyV3Alternating(); // Usar la nueva versión V3 con filtro alternado
+
+function toggleHeaders() {
+  showHeaders = !showHeaders;
+  const buttons = document.querySelectorAll('.ldp-controls button');
+  const headerButton = buttons[3];
+  
+  if (headerButton) {
+    headerButton.innerHTML = showHeaders ? 
+      '<i class="fas fa-eye-slash"></i> Cabeceras' : 
+      '<i class="fas fa-eye"></i> Cabeceras';
+  }
+  
+  const cells = document.querySelectorAll('.grid-cell');
+  cells.forEach(cell => {
+    const header = cell.querySelector('.header-indicator');
+    if (header) {
+      header.style.display = showHeaders ? 'flex' : 'none';
+    }
+  });
+  
+  console.log(`Cabeceras ${showHeaders ? 'activadas' : 'desactivadas'}`);
+}
+
+function updatePriceLevel(currentPrice) {
+  priceHistory.push(parseFloat(currentPrice));
+  
+  if (priceHistory.length > 20) {
+    priceHistory.shift();
+  }
+  
+  if (priceHistory.length < 3) {
+    return 'mid';
+  }
+  
+  const maxPrice = Math.max(...priceHistory);
+  const minPrice = Math.min(...priceHistory);
+  
+  if (parseFloat(currentPrice) === maxPrice) {
+    return 'max';
+  } else if (parseFloat(currentPrice) === minPrice) {
+    return 'min';
+  } else {
+    return 'mid';
+  }
+}
+
+function applyHeaderToCell(cell, level) {
+  if (!showHeaders) return;
+  
+  const existingHeader = cell.querySelector('.header-indicator');
+  if (existingHeader) {
+    existingHeader.remove();
+  }
+  
+  const header = document.createElement('div');
+  header.className = 'header-indicator';
+  
+  switch(level) {
+    case 'max':
+      header.classList.add('header-max');
+      header.innerHTML = '<i class="fas fa-chevron-up"></i>';
+      break;
+    case 'min':
+      header.classList.add('header-min');
+      header.innerHTML = '<i class="fas fa-chevron-down"></i>';
+      break;
+    case 'mid':
+      header.classList.add('header-mid');
+      header.innerHTML = '<i class="fas fa-circle"></i>';
+      break;
+  }
+  
+  cell.appendChild(header);
+}
+
+function updatePriceIndicator(level) {
+  const indicator = document.getElementById('price-indicator');
+  const levelText = document.getElementById('price-level');
+  
+  if (!indicator || !levelText) return;
+  
+  switch(level) {
+    case 'max':
+      indicator.textContent = 'MÁXIMO';
+      indicator.className = 'price-indicator indicator-max';
+      levelText.textContent = 'MÁXIMO';
+      levelText.style.color = '#3498db';
+      break;
+    case 'min':
+      indicator.textContent = 'MÍNIMO';
+      indicator.className = 'price-indicator indicator-min';
+      levelText.textContent = 'MÍNIMO';
+      levelText.style.color = '#e74c3c';
+      break;
+    case 'mid':
+      indicator.textContent = 'MEDIO';
+      indicator.className = 'price-indicator indicator-mid';
+      levelText.textContent = 'MEDIO';
+      levelText.style.color = '#2ecc71';
+      break;
+  }
+}
+
+// ====================== SISTEMA DE TRADING ======================
+
+let tradingActive = false;
+let tradingStake = 1;
+let stopWin = 10;
+let stopLoss = 10;
+let totalProfit = 0;
+let wins = 0;
+let losses = 0;
+
+function iniciarTrading() {
+  const stakeInput = document.getElementById('trading-stake');
+  const stopWinInput = document.getElementById('trading-stop-win');
+  const stopLossInput = document.getElementById('trading-stop-loss');
+  
+  if (!stakeInput || !stopWinInput || !stopLossInput) {
+    console.error('Elementos de trading no encontrados');
+    return;
+  }
+  
+  tradingStake = parseFloat(stakeInput.value);
+  stopWin = parseFloat(stopWinInput.value);
+  stopLoss = parseFloat(stopLossInput.value);
+  
+  tradingActive = true;
+  tradingPaused = false;
+  pauseUntil = null;
+  
+  updateTradingDisplay();
+  updateTradingSignalStatus();
+  
+  console.log('💰 Trading V3 con filtro alternado iniciado:', { tradingStake, stopWin, stopLoss });
+  
+  const estadoElement = document.getElementById('trading-estado');
+  if (estadoElement) {
+    estadoElement.textContent = 'ACTIVO';
+    estadoElement.style.color = '#27ae60';
+  }
+}
+
+function autoStartTrading() {
+  tradingStake = 1;
+  stopWin = 10;
+  stopLoss = 10;
+  tradingActive = true;
+  tradingPaused = false;
+  pauseUntil = null;
+  
+  updateTradingDisplay();
+  updateTradingSignalStatus();
+  
+  const estadoElement = document.getElementById('trading-estado');
+  if (estadoElement) {
+    estadoElement.textContent = 'ACTIVO (Auto)';
+    estadoElement.style.color = '#27ae60';
+  }
+  console.log('🚀 Trading V3 con filtro alternado auto-iniciado');
+}
+
+function resetTrading() {
+  totalProfit = 0;
+  wins = 0;
+  losses = 0;
+  tradingActive = false;
+  tradingPaused = false;
+  pauseUntil = null;
+  currentOperation = null;
+  
+  if (pauseTimeout) {
+    clearTimeout(pauseTimeout);
+    pauseTimeout = null;
+  }
+  
+  greenHeaderStrategy.reset();
+  
+  updateTradingDisplay();
+  updateTradingSignalStatus();
+  
+  console.log('🔄 Trading V3 con filtro alternado reseteado completamente');
+  
+  const estadoElement = document.getElementById('trading-estado');
+  if (estadoElement) {
+    estadoElement.textContent = 'INACTIVO';
+    estadoElement.style.color = '#f39c12';
+  }
+}
+
+function updateTradingDisplay() {
+  const profitElement = document.getElementById('trading-profit');
+  const winsElement = document.getElementById('trading-wins');
+  const lossesElement = document.getElementById('trading-losses');
+  const estadoElement = document.getElementById('trading-estado');
+  const signalStatusElement = document.getElementById('trading-signal-status');
+  
+  if (profitElement) profitElement.textContent = `$${totalProfit.toFixed(2)}`;
+  if (winsElement) winsElement.textContent = wins;
+  if (lossesElement) lossesElement.textContent = losses;
+  
+  if (profitElement) {
+    if (totalProfit > 0) {
+      profitElement.className = 'stat-value positive';
+    } else if (totalProfit < 0) {
+      profitElement.className = 'stat-value negative';
+    } else {
+      profitElement.className = 'stat-value';
+    }
+  }
+  
+  if (tradingActive && estadoElement) {
+    if (totalProfit >= stopWin) {
+      tradingActive = false;
+      tradingPaused = true;
+      estadoElement.textContent = 'STOP WIN ALCANZADO';
+      estadoElement.style.color = '#27ae60';
+      if (signalStatusElement) {
+        signalStatusElement.textContent = 'PAUSADO';
+        signalStatusElement.style.color = '#f39c12';
+      }
+      console.log('🎉 STOP WIN alcanzado! Trading detenido.');
+    } else if (totalProfit <= -stopLoss) {
+      tradingActive = false;
+      tradingPaused = true;
+      estadoElement.textContent = 'STOP LOSS ALCANZADO';
+      estadoElement.style.color = '#e74c3c';
+      if (signalStatusElement) {
+        signalStatusElement.textContent = 'PAUSADO';
+        signalStatusElement.style.color = '#f39c12';
+      }
+      console.log('💥 STOP LOSS alcanzado! Trading detenido.');
+    }
+  }
+}
+
+function updateTradingSignalStatus() {
+  const signalStatus = document.getElementById('trading-signal-status');
+  
+  if (!signalStatus) return;
+  
+  if (!tradingActive) {
+    signalStatus.textContent = 'INACTIVO';
+    signalStatus.style.color = '#f39c12';
+  } else if (tradingPaused) {
+    signalStatus.textContent = 'PAUSADO';
+    signalStatus.style.color = '#f39c12';
+  } else {
+    signalStatus.textContent = 'ACTIVO';
+    signalStatus.style.color = '#27ae60';
+  }
+}
+
+function procesarResultadoTrading(ganancia) {
+  if (!tradingActive) return tradingStake;
+  
+  totalProfit += ganancia;
+  
+  if (ganancia > 0) {
+    wins++;
+  } else if (ganancia < 0) {
+    losses++;
+  }
+  
+  updateTradingDisplay();
+  
+  console.log(`📊 Trading V3 - Ganancia: $${ganancia.toFixed(2)} | Profit Total: $${totalProfit.toFixed(2)}`);
+  
+  if (window.currentOperationData) {
+    window.currentOperationData.result = ganancia > 0 ? 'WIN' : 'LOSS';
+    window.currentOperationData.profit = ganancia;
+    
+    addOperationToHistory(window.currentOperationData);
+    
+    window.currentOperationData = null;
+  }
+  
+  return tradingStake;
+}
+
+// ====================== FUNCIONES DE CONTROL DE PAUSA ======================
+
+function toggleTradingPause() {
+    if (!tradingActive) {
+        console.log('⚠️ No se puede pausar - Trading no está activo');
+        return;
+    }
+    
+    tradingPaused = !tradingPaused;
+    
+    if (tradingPaused) {
+        pauseUntil = Date.now() + 30000;
+        
+        console.log('⏸️ Trading V3 PAUSADO manualmente');
+        
+        const estadoElement = document.getElementById('trading-estado');
+        if (estadoElement) {
+            estadoElement.textContent = 'PAUSADO';
+            estadoElement.style.color = '#f39c12';
+        }
+        
+        if (pauseTimeout) {
+            clearTimeout(pauseTimeout);
+        }
+        pauseTimeout = setTimeout(() => {
+            if (tradingPaused) {
+                console.log('⏰ Pausa manual expirada - Reanudando automáticamente');
+                tradingPaused = false;
+                pauseUntil = null;
+                updateTradingSignalStatus();
+                if (tradingActive) {
+                    const estadoElement = document.getElementById('trading-estado');
+                    if (estadoElement) {
+                        estadoElement.textContent = 'ACTIVO';
+                        estadoElement.style.color = '#27ae60';
+                    }
+                }
+            }
+        }, 30000);
+    } else {
+        pauseUntil = null;
+        if (pauseTimeout) {
+            clearTimeout(pauseTimeout);
+            pauseTimeout = null;
+        }
+        
+        console.log('▶️ Trading V3 REANUDADO manualmente');
+        if (tradingActive) {
+            const estadoElement = document.getElementById('trading-estado');
+            if (estadoElement) {
+                estadoElement.textContent = 'ACTIVO';
+                estadoElement.style.color = '#27ae60';
+            }
+        }
+    }
+    
+    updateTradingSignalStatus();
+}
+
+function forceResumeTrading() {
+    tradingPaused = false;
+    pauseUntil = null;
+    currentOperation = null;
+    
+    if (pauseTimeout) {
+        clearTimeout(pauseTimeout);
+        pauseTimeout = null;
+    }
+    
+    console.log('🔓 Trading V3 FORZADO a reanudar');
+    updateTradingSignalStatus();
+    
+    if (tradingActive) {
+        const estadoElement = document.getElementById('trading-estado');
+        if (estadoElement) {
+            estadoElement.textContent = 'ACTIVO';
+            estadoElement.style.color = '#27ae60';
+        }
+    }
+}
+
+// ====================== SISTEMA LDP OPTIMIZADO ======================
+
+let gridInitialized = false;
+let lastPosition = null;
+let arrowCounter = 0;
+let updateQueue = [];
+let isProcessingQueue = false;
+
+function initLDPGrid() {
+    const grid = document.getElementById('ldp-grid');
+    if (!grid || gridInitialized) return;
+    
+    grid.innerHTML = '';
+    
+    const fragment = document.createDocumentFragment();
+    
+    for (let y = 10; y >= 0; y--) {
+        for (let x = 0; x <= 10; x++) {
+            const cell = document.createElement('div');
+            cell.className = 'grid-cell';
+            cell.id = `cell-${x}-${y}`;
+            cell.dataset.x = x;
+            cell.dataset.y = y;
+            
+            if (x < 5) {
+                cell.classList.add('grid-section-left');
+            } else if (x > 6) {
+                cell.classList.add('grid-section-right');
+            }
+            
+            const counter = document.createElement('div');
+            counter.className = 'digit-counter';
+            counter.id = `counter-${x}-${y}`;
+            cell.appendChild(counter);
+            
+            fragment.appendChild(cell);
+        }
+    }
+    
+    grid.appendChild(fragment);
+    gridInitialized = true;
+    console.log('✅ Cuadrícula LDP inicializada (V3 con filtro alternado)');
+}
+
+function updateLDPAnalysis(currentDigit, isUp, currentPrice, level) {
+    updateQueue.push({ currentDigit, isUp, currentPrice, level });
+    
+    if (!isProcessingQueue) {
+        isProcessingQueue = true;
+        
+        requestAnimationFrame(() => {
+            processUpdateQueue();
+            isProcessingQueue = false;
+        });
+    }
+}
+
+function processUpdateQueue() {
+    if (updateQueue.length === 0) return;
+    
+    const { currentDigit, isUp, currentPrice, level } = updateQueue[updateQueue.length - 1];
+    updateQueue = [];
+    
+    let gridX, gridY;
+    gridY = 10 - currentDigit;
+    
+    if (isUp) {
+        gridX = Math.floor(currentDigit / 2.5);
+        if (gridX > 4) gridX = 4;
+    } else {
+        gridX = 7 + Math.floor(currentDigit / 2.5);
+        if (gridX > 10) gridX = 10;
+    }
+    
+    const cell = document.getElementById(`cell-${gridX}-${gridY}`);
+    if (cell) {
+        cell.classList.remove('blue-digit', 'red-digit', 'pivot-point');
+        cell.classList.add(isUp ? 'blue-digit' : 'red-digit');
+        cell.textContent = currentDigit;
+        
+        applyHeaderToCell(cell, level);
+        
+        const counter = document.getElementById(`counter-${gridX}-${gridY}`);
+        if (counter) {
+            const currentCount = parseInt(counter.textContent) || 0;
+            counter.textContent = currentCount + 1;
+        }
+    }
+    
+    if (showArrows) {
+        const currentPosition = getCellCenter(gridX, gridY);
+        if (lastPosition) {
+            createArrow(lastPosition, currentPosition, isUp);
+        }
+        lastPosition = currentPosition;
+    }
+    
+    const gridStatusElement = document.getElementById('grid-status');
+    if (gridStatusElement) {
+        gridStatusElement.textContent = `Dígito: ${currentDigit} (${isUp ? 'UP' : 'DOWN'})`;
+    }
+    
+    // Pasar el precio a la estrategia V3 con filtro alternado
+    greenHeaderStrategy.addDigit(currentDigit, isUp, level, currentPrice);
+    
+    prevDigit = currentDigit;
+    prevTrend = isUp;
+    
+    const prevDigitElement = document.getElementById('prev-digit');
+    if (prevDigitElement) {
+        prevDigitElement.textContent = prevDigit !== null ? prevDigit : '-';
+    }
+}
+
+function clearGrid() {
+    const cells = document.querySelectorAll('.grid-cell');
+    cells.forEach(cell => {
+        cell.classList.remove('blue-digit', 'red-digit', 'pivot-point');
+        cell.textContent = '';
+        
+        const header = cell.querySelector('.header-indicator');
+        if (header) header.remove();
+        
+        const counter = cell.querySelector('.digit-counter');
+        if (counter) counter.textContent = '';
+    });
+    
+    const svg = document.getElementById('arrow-svg');
+    if (svg) svg.innerHTML = '';
+    
+    lastPosition = null;
+    arrowCounter = 0;
+    updateQueue = [];
+    
+    digitCounters = Array(11).fill().map(() => Array(11).fill(0));
+    digitHistory = [];
+    priceHistory = [];
+    greenHeaderStrategy.reset();
+    
+    updateDigitHistory();
+    prevDigit = null;
+    prevTrend = null;
+    
+    const gridStatusElement = document.getElementById('grid-status');
+    if (gridStatusElement) {
+        gridStatusElement.textContent = 'Limpiado';
+    }
+    
+    const prevDigitElement = document.getElementById('prev-digit');
+    if (prevDigitElement) {
+        prevDigitElement.textContent = '-';
+    }
+    
+    const priceLevelElement = document.getElementById('price-level');
+    if (priceLevelElement) {
+        priceLevelElement.textContent = '-';
+    }
+    
+    const priceIndicatorElement = document.getElementById('price-indicator');
+    if (priceIndicatorElement) {
+        priceIndicatorElement.textContent = 'MEDIO';
+        priceIndicatorElement.className = 'price-indicator indicator-mid';
+    }
+    
+    const analysisContentElement = document.getElementById('green-analysis-content');
+    if (analysisContentElement) {
+        analysisContentElement.innerHTML = `
+            <div style="text-align: center; color: #7f8c8d; padding: 15px;">
+                <i class="fas fa-broom fa-2x" style="margin-bottom: 8px;"></i>
+                <div>Cuadrícula limpiada - Sistema V3 con filtro reiniciado</div>
+                <div style="font-size: 0.75rem; margin-top: 4px;">
+                    <span class="scanning-animation">●</span> Reanudando escaneo con filtro alternado...
+                </div>
+            </div>
+        `;
+    }
+    
+    const signalUpBox = document.getElementById('signal-up-box');
+    const signalDownBox = document.getElementById('signal-down-box');
+    const signalUpText = document.getElementById('signal-up-text');
+    const signalDownText = document.getElementById('signal-down-text');
+    
+    if (signalUpBox) signalUpBox.className = 'signal-card signal-up';
+    if (signalUpText) signalUpText.textContent = 'ESPERANDO';
+    if (signalDownBox) signalDownBox.className = 'signal-card signal-down';
+    if (signalDownText) signalDownText.textContent = 'ESPERANDO';
+}
+
+function toggleArrows() {
+    showArrows = !showArrows;
+    const svg = document.getElementById('arrow-svg');
+    if (svg) {
+        svg.style.display = showArrows ? 'block' : 'none';
+    }
+    
+    const buttons = document.querySelectorAll('.ldp-controls button');
+    const arrowButton = buttons[2];
+    
+    if (arrowButton) {
+        arrowButton.innerHTML = showArrows ? 
+            '<i class="fas fa-eye-slash"></i> Flechas' : 
+            '<i class="fas fa-eye"></i> Flechas';
+    }
+}
+
+function toggleHistory() {
+    const historyElement = document.getElementById('history-panel');
+    if (historyElement) {
+        showHistory = !showHistory;
+        historyElement.style.display = showHistory ? 'block' : 'none';
+    }
+}
+
+function updateDigitHistory() {
+    const historyContainer = document.getElementById('history-digits');
+    if (!historyContainer) return;
+    
+    historyContainer.innerHTML = '';
+    
+    digitHistory.forEach((item, index) => {
+        const digitElement = document.createElement('div');
+        digitElement.className = `history-digit ${item.isUp ? 'history-blue' : 'history-red'}`;
+        digitElement.textContent = item.digit;
+        
+        let levelText = '';
+        switch(item.level) {
+            case 'max': levelText = ' (MÁX)'; break;
+            case 'min': levelText = ' (MÍN)'; break;
+            case 'mid': levelText = ' (MED)'; break;
+        }
+        digitElement.title = `Dígito #${index + 1} - ${item.isUp ? 'UP' : 'DOWN'}${levelText} - Precio: ${item.price}`;
+        
+        historyContainer.appendChild(digitElement);
+    });
+}
+
+// ====================== FUNCIONES DE RESULTADOS ======================
+
+function closeResultPanel() {
+    document.getElementById('result-panel').style.display = 'none';
+    document.getElementById('overlay').style.display = 'none';
+}
+
+function mostrarResultadoOperacion(profit, status, contract_id) {
+    const resultContent = document.getElementById('result-content');
+    if (!resultContent) return;
+    
+    const existingContent = resultContent.innerHTML;
+    
+    const resultadoHTML = `
+        <div class="result-section" style="border: 2px solid ${profit > 0 ? '#27ae60' : '#e74c3c'}; border-radius: 8px; padding: 12px; margin-top: 8px; background: rgba(255, 255, 255, 0.04);">
+            <div class="result-section-title" style="color: ${profit > 0 ? '#27ae60' : '#e74c3c'}; font-size: 1rem;">
+                <i class="fas fa-chart-line"></i> RESULTADO OPERACIÓN V3 - ${profit > 0 ? 'GANADORA ✅' : 'PERDEDORA ❌'}
+            </div>
+            <div class="info-line" style="display: flex; justify-content: space-between; margin: 8px 0; font-size: 0.9rem;">
+                <span style="color: #95a5a6;">Estrategia:</span>
+                <span style="color: #9b59b6; font-weight: bold;">V3 con Filtro Alternado</span>
+            </div>
+            <div class="info-line" style="display: flex; justify-content: space-between; margin: 8px 0; font-size: 0.9rem;">
+                <span style="color: #95a5a6;">Contract ID:</span>
+                <span style="color: white;">${contract_id}</span>
+            </div>
+            <div class="info-line" style="display: flex; justify-content: space-between; margin: 8px 0; font-size: 0.9rem;">
+                <span style="color: #95a5a6;">Estado:</span>
+                <span style="color: white;">${status}</span>
+            </div>
+            <div class="info-line" style="display: flex; justify-content: space-between; margin: 8px 0; font-size: 0.9rem;">
+                <span style="color: #95a5a6;">Resultado:</span>
+                <strong style="color: ${profit > 0 ? '#27ae60' : '#e74c3c'}; font-size: 1.1rem;">
+                    $${profit > 0 ? '+' : ''}${profit.toFixed(2)}
+                </strong>
+            </div>
+            <div class="info-line" style="display: flex; justify-content: space-between; margin: 8px 0; font-size: 0.9rem;">
+                <span style="color: #95a5a6;">Timestamp:</span>
+                <span style="color: white;">${new Date().toLocaleTimeString()}</span>
+            </div>
+        </div>
+    `;
+    
+    resultContent.innerHTML = resultadoHTML + existingContent;
+    document.getElementById('result-panel').style.display = 'block';
+    document.getElementById('overlay').style.display = 'block';
+    console.log(`📈 Resultado V3 mostrado: ${profit > 0 ? 'WIN' : 'LOSS'} $${profit.toFixed(2)}`);
+}
+
+const assetSelector = document.getElementById("asset-selector");
+if (assetSelector) {
+    assetSelector.addEventListener("change", function() {
+        const assetName = this.options[this.selectedIndex].text;
+        
+        if (running) {
+            stopFeed();
+            setTimeout(startFeed, 500);
+        }
+        
+        tickCount = 0;
+        const tickCountElement = document.getElementById("tick-count");
+        if (tickCountElement) {
+            tickCountElement.textContent = tickCount;
+        }
+        
+        digits = [];
+        priceHistory = [];
+        greenHeaderStrategy.reset();
+        
+        if (chart) {
+            drawChart();
+        }
+        
+        clearGrid();
+    });
+}
+
+function drawChart() {
+    if (!chart || !ctx) return;
+    
+    ctx.clearRect(0, 0, chart.width, chart.height);
+    
+    const gradient = ctx.createLinearGradient(0, 0, 0, chart.height);
+    gradient.addColorStop(0, 'rgba(30, 30, 46, 0.8)');
+    gradient.addColorStop(1, 'rgba(20, 20, 35, 0.9)');
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, chart.width, chart.height);
+
+    for (let i = 0; i <= 9; i++) {
+        ctx.fillStyle = "#3498db";
+        ctx.font = "bold 14px 'Segoe UI'"; 
+        ctx.fillText(i.toString(), 20, 50 + (9 - i) * 15);
+        ctx.fillStyle = "#e74c3c";
+        ctx.font = "bold 14px 'Segoe UI'"; 
+        ctx.fillText(i.toString(), 20, 250 + i * 15);
+    }
+
+    ctx.beginPath();
+    ctx.moveTo(50, 200);
+    ctx.lineTo(chart.width - 20, 200);
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.1)";
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    for (let i = 0; i < digits.length; i++) {
+        let x = 60 + i * ((chart.width - 120) / 14);
+        let item = digits[i];
+        let digit = item.value;
+        let up = item.up;
+        let y = up ? (50 + (9 - digit) * 15) : (250 + digit * 15);
+        
+        ctx.shadowColor = up ? "rgba(52, 152, 219, 0.4)" : "rgba(231, 76, 60, 0.4)";
+        ctx.shadowBlur = 8;
+        
+        ctx.fillStyle = up ? "#3498db" : "#e74c3c";
+        ctx.beginPath();
+        ctx.arc(x, y, 7, 0, 2 * Math.PI);
+        ctx.fill();
+        
+        ctx.shadowColor = 'transparent';
+        ctx.shadowBlur = 0;
+        
+        ctx.font = "bold 16px 'Segoe UI'";
+        ctx.strokeStyle = up ? "#3498db" : "#e74c3c";
+        ctx.lineWidth = 2;
+        ctx.strokeRect(x - 14, y - 32, 28, 28);
+
+        ctx.fillStyle = "#fff";
+        ctx.fillText(digit.toString(), x - 7, y - 12);
+    }
+}
+
+function extractDigitAfterDecimal(price) {
+    let decimalPlaces = 3;
+    
+    const assetElement = document.getElementById("asset-selector");
+    const assetValue = assetElement ? assetElement.value : 'R_10';
+    
+    switch(assetValue) {
+        case 'R_10':
+        case 'R_25':
+            decimalPlaces = 3;
+            break;
+        case 'R_50':
+        case 'R_75':
+            decimalPlaces = 4;
+            break;
+        case 'R_100':
+            decimalPlaces = 2;
+            break;
+        default:
+            decimalPlaces = 3;
+    }
+    
+    const formattedPrice = parseFloat(price).toFixed(decimalPlaces);
+    const lastDigit = formattedPrice.slice(-1);
+    const digit = parseInt(lastDigit);
+    
+    if (tickCount % 10 === 0) {
+        console.log(`📊 Precio: ${price} -> Formateado: ${formattedPrice} -> Dígito: ${digit} (${decimalPlaces} decimales)`);
+    }
+    
+    return digit;
+}
+
+function determineTrend(currentPrice, lastPrice, priceHistory) {
+    if (lastPrice === null) {
+        return true;
+    }
+    
+    const wentUp = parseFloat(currentPrice) >= parseFloat(lastPrice);
+    
+    if (parseFloat(currentPrice) === parseFloat(lastPrice)) {
+        if (priceHistory.length >= 3) {
+            const current = parseFloat(currentPrice);
+            const previous1 = parseFloat(priceHistory[priceHistory.length - 2] || currentPrice);
+            const previous2 = parseFloat(priceHistory[priceHistory.length - 3] || currentPrice);
+            
+            if (current === previous1) {
+                if (previous1 > previous2) {
+                    return true;
+                } else if (previous1 < previous2) {
+                    return false;
+                }
+            }
+        }
+    }
+    
+    return wentUp;
+}
+
+function updateDigit(price, wentUp) {
+    requestAnimationFrame(() => {
+        const digit = extractDigitAfterDecimal(price);
+        
+        if (lastDigitEl) {
+            lastDigitEl.textContent = digit;
+            lastDigitEl.style.color = wentUp ? "#3498db" : "#e74c3c";
+        }
+        
+        if (priceEl) {
+            priceEl.textContent = price;
+            priceEl.style.background = wentUp ? "linear-gradient(135deg, #3498db, #2980b9)" : "linear-gradient(135deg, #e74c3c, #c0392b)";
+        }
+
+        digits.push({ value: digit, up: wentUp });
+        if (digits.length > 15) digits.shift();
+        
+        if (chart) {
+            drawChart();
+        }
+        
+        const priceLevel = updatePriceLevel(price);
+        updateLDPAnalysis(digit, wentUp, price, priceLevel);
+        updatePriceIndicator(priceLevel);
+        
+        digitHistory.push({digit: digit, isUp: wentUp, price: price, level: priceLevel});
+        if (digitHistory.length > 50) {
+            digitHistory.shift();
+        }
+        updateDigitHistory();
+        
+        tickCount++;
+        const tickCountElement = document.getElementById("tick-count");
+        if (tickCountElement) {
+            tickCountElement.textContent = tickCount;
+        }
+    });
+}
+
+function startFeed() {
+    if (running) return;
+    
+    currentAsset = document.getElementById("asset-selector").value;
+    
+    const statusElement = document.getElementById("status");
+    if (statusElement) {
+        statusElement.textContent = "Conectando...";
+    }
+    
+    ws = new WebSocket("wss://ws.binaryws.com/websockets/v3?app_id=1089");
+    
+    ws.binaryType = 'arraybuffer';
+    
+    ws.onopen = () => {
+        ws.send(JSON.stringify({ ticks: currentAsset, subscribe: 1 }));
+        running = true;
+        if (statusElement) {
+            statusElement.textContent = "Conectado";
+            statusElement.style.color = "#2ecc71";
+        }
+    };
+    
+    ws.onmessage = msg => {
+        let data = JSON.parse(msg.data);
+        if (data.tick) {
+            let price = parseFloat(data.tick.quote).toFixed(6);
+            let currentPrice = parseFloat(price);
+            
+            let wentUp = determineTrend(currentPrice, lastPrice, priceHistory);
+            
+            lastPrice = currentPrice;
+            
+            updateDigit(price, wentUp);
+        }
+    };
+    
+    ws.onclose = () => {
+        running = false;
+        const statusElement = document.getElementById("status");
+        if (statusElement) {
+            statusElement.textContent = "Desconectado";
+            statusElement.style.color = "#e74c3c";
+        }
+    };
+    
+    ws.onerror = () => {
+        const statusElement = document.getElementById("status");
+        if (statusElement) {
+            statusElement.textContent = "Error de conexión";
+            statusElement.style.color = "#e74c3c";
+        }
+    };
+}
+
+function stopFeed() {
+    if (ws) ws.close();
+    running = false;
+    const statusElement = document.getElementById("status");
+    if (statusElement) {
+        statusElement.textContent = "Desconectado";
+        statusElement.style.color = "#f39c12";
+    }
+}
+
+// ====================== SISTEMA DERIV AUTOTRADIN DEMO  ======================
+const DERIV_API_TOKEN = "sFYENWAb4mricfa";
+const DURATION = 5;
+
+let derivWs = null;
+let reconectando = false;
+let currentContract = null;
+
+window.operarAutomatico = function(signal, stake) {
+    console.log(`🔄 Iniciando operación automática V3 con filtro para ${signal}...`);
+    if (!derivWs || derivWs.readyState !== WebSocket.OPEN) {
+        console.log("⚠️ API no lista - Intentando reconectar...");
+        conectarDerivAPI();
+        setTimeout(() => window.operarAutomatico(signal, stake), 3000);
+        return;
+    }
+
+    const contract_type = signal === "UP" ? "CALL" : "PUT";
+    const symbol_actual = document.getElementById("asset-selector").value || "R_10";
+
+    const request = {
+        buy: 1,
+        price: stake,
+        parameters: {
+            amount: stake,
+            basis: "stake",
+            contract_type: contract_type,
+            currency: "USD",
+            duration: DURATION,
+            duration_unit: "t",
+            symbol: symbol_actual
+        }
+    };
+
+    derivWs.send(JSON.stringify(request));
+    console.log(`📤 OPERACIÓN V3 ENVIADA: ${contract_type} | Stake: $${stake.toFixed(2)} | Símbolo: ${symbol_actual} | Duración: ${DURATION}t`);
+};
+
+function validarResultadoContrato(contract_id, stake_inicial) {
+    console.log(`🔍 Iniciando monitoreo del contrato V3: ${contract_id}`);
+    
+    const subscribeRequest = {
+        proposal_open_contract: 1,
+        contract_id: contract_id,
+        subscribe: 1
+    };
+    
+    derivWs.send(JSON.stringify(subscribeRequest));
+    
+    setTimeout(() => {
+        if (currentContract && currentContract.contract_id === contract_id) {
+            console.log("⏰ Timeout - Verificando estado del contrato...");
+            derivWs.send(JSON.stringify({
+                proposal_open_contract: 1,
+                contract_id: contract_id
+            }));
+        }
+    }, 30000);
+}
+
+function conectarDerivAPI() {
+    if (reconectando) return;
+    reconectando = true;
+
+    derivWs = new WebSocket(`wss://ws.derivws.com/websockets/v3?app_id=1089`);
+    window.derivWs = derivWs;
+
+    derivWs.onopen = () => {
+        console.log("🔄 Conectando a Deriv API...");
+        derivWs.send(JSON.stringify({ authorize: DERIV_API_TOKEN }));
+        reconectando = false;
+    };
+
+    derivWs.onmessage = (msg) => {
+        const data = JSON.parse(msg.data);
+
+        if (data.authorize) {
+            console.log("✅ AUTORIZADO EN DERIV:", data.authorize.loginid);
+            derivWs.send(JSON.stringify({ balance: 1, subscribe: 1 }));
+            
+            setTimeout(() => {
+                console.log("🚀 BOT V3 CON FILTRO ALTERNADO 100% LISTO");
+                console.log("🎯 Filtro activado: Solo patrones R-A-R-A o A-R-A-R");
+                console.log("❌ Rechaza automáticamente: A-A-R-R, R-R-A-A, A-R-R-A, R-A-A-R");
+                console.log("📊 Validación completa: Dirección + Precio + Niveles + Patrón Alternado");
+            }, 2000);
+        }
+
+        if (data.buy && data.buy.contract_id) {
+            const contract_id = data.buy.contract_id;
+            const stake = parseFloat(data.buy.buy_price);
+            
+            currentContract = {
+                contract_id: contract_id,
+                stake: stake,
+                timestamp: Date.now(),
+                status: 'open'
+            };
+            
+            if (currentOperation) {
+                currentOperation.contract_id = contract_id;
+                currentOperation.status = 'open';
+            }
+            
+            if (window.currentOperationData) {
+                window.currentOperationData.contractId = contract_id;
+            }
+            
+            console.log(`🎉 COMPRA V3 EXITOSA! ID: ${contract_id} | Stake: $${stake.toFixed(2)} USD`);
+            console.log(`⏸️ Sistema V3 pausado por ${DURATION} ticks`);
+            
+            setTimeout(() => validarResultadoContrato(contract_id, stake), 2000);
+        }
+
+        if (data.proposal_open_contract) {
+            const contract = data.proposal_open_contract;
+            
+            console.log(`📊 Update contrato V3: ${contract.contract_id} | Status: ${contract.status} | Vendido: ${contract.is_sold}`);
+            
+            if (contract.is_sold) {
+                const profit = parseFloat(contract.profit);
+                const status = contract.status;
+                const contract_id = contract.contract_id;
+                
+                console.log(`🎯 CONTRATO V3 FINALIZADO - ID: ${contract_id} | Status: ${status} | Ganancia: $${profit.toFixed(2)}`);
+                
+                procesarResultadoTrading(profit);
+                
+                if (currentOperation && currentOperation.contract_id === contract_id) {
+                    console.log(`🔓 Liberando pausa V3 - Operación ${contract_id} completada`);
+                    currentOperation = null;
+                    tradingPaused = false;
+                    pauseUntil = null;
+                    
+                    if (pauseTimeout) {
+                        clearTimeout(pauseTimeout);
+                        pauseTimeout = null;
+                    }
+                    
+                    updateTradingSignalStatus();
+                }
+                
+                const estadoElement = document.getElementById('trading-estado');
+                if (estadoElement) {
+                    estadoElement.textContent = tradingActive ? 'ACTIVO' : 'PAUSADO';
+                    if (tradingActive && !tradingPaused) {
+                        estadoElement.style.color = '#27ae60';
+                    }
+                }
+                
+                derivWs.send(JSON.stringify({
+                    proposal_open_contract: 0,
+                    contract_id: contract_id,
+                    subscribe: 0
+                }));
+                
+                if (currentContract && currentContract.contract_id === contract_id) {
+                    currentContract = null;
+                }
+                
+                mostrarResultadoOperacion(profit, status, contract_id);
+            }
+        }
+
+        if (data.balance) {
+            console.log(`💰 Balance actual V3: $${data.balance.balance} USD`);
+        }
+
+        if (data.error) {
+            console.error("❌ ERROR DERIV V3:", data.error);
+            if (data.error.code === "ContractBuyValidation" || data.error.code === "InvalidContract") {
+                console.error("❌ ERROR EN COMPRA V3:", data.error.message);
+                
+                const stakePerdido = currentContract ? -currentContract.stake : -tradingStake;
+                console.log(`💸 Pérdida V3 por error: $${Math.abs(stakePerdido).toFixed(2)}`);
+                
+                procesarResultadoTrading(stakePerdido);
+                
+                currentOperation = null;
+                tradingPaused = false;
+                pauseUntil = null;
+                
+                if (pauseTimeout) {
+                    clearTimeout(pauseTimeout);
+                    pauseTimeout = null;
+                }
+    
+                updateTradingSignalStatus();
+                
+                currentContract = null;
+                mostrarResultadoOperacion(stakePerdido, 'ERROR', 'N/A');
+            }
+        }
+    };
+
+    derivWs.onerror = (err) => {
+        console.error("⚠️ Error WebSocket Deriv V3:", err);
+    };
+
+    derivWs.onclose = () => {
+        console.log("🔌 Deriv API desconectada - Reconectando en 5s...");
+        currentContract = null;
+        setTimeout(conectarDerivAPI, 5000);
+    };
+}
+
+</script>
+
+</body>
+</html>
